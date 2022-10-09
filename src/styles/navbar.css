@@ -1,0 +1,8 @@
+button.user {
+    border-radius: 50%;
+    border: none;
+    background-color: transparent;
+    font-size: 20px;
+    margin-left: 10px;
+    text-decoration: none;
+}

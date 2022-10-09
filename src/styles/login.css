@@ -1,0 +1,12 @@
+.login-title {
+    width: 100%;
+    text-align: center;
+}
+
+.loginForm{
+    margin: auto;
+    width: 600px;
+    display: flex;
+    margin-top: 15vh;
+    padding: 40px;
+}

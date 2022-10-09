@@ -1,0 +1,8 @@
+.userInfoStudentContainer{
+    margin:20px 20px; 
+    text-align: center;
+}
+
+.userInfoStudentContainer .userIcon{
+    font-size: 100px;
+}
