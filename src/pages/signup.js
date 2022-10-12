@@ -6,6 +6,7 @@ import { Alert } from "react-bootstrap";
 import { db } from "../firebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
 
+
 export default function SignUp () {
 
     // const location = useLocation();
@@ -14,7 +15,7 @@ export default function SignUp () {
     const [password, setPassword] = useState();
     const [retypePassword, setRetypePassword] = useState();
     const [error, setError] = useState();
-    const { signUp } = useAuth(); 
+    const { signUp, setUserRole } = useAuth(); 
     const [loading, setLoading] = useState(false);
     const role = useRef(null);
     
@@ -33,6 +34,19 @@ export default function SignUp () {
     }
 
 
+
+    const registerUser = async function (email, password, role){
+        const user = await signUp(email, password);
+        const userId = user.user.uid;
+        console.log(userId);
+        console.log(role);
+        await setUserRole(userId, role);
+    }
+
+    const navigateToUpdateProfile = function (email){
+        navigate('/updateProfile', {state: {'email': email, 'isSignUpUpdation': true}, replace: false});
+    }
+
     const handleSubmit = async function (e) {
         e.preventDefault();
         // console.log(role.current.value);
@@ -41,20 +55,20 @@ export default function SignUp () {
                 setError();
                 setLoading(true);
                 let isPc = false
-                if(role.current.value == 2){
+                if(role.current.value === "Placement Coordinator"){
                     isPc = await checkIfValidPCEmail();
                     console.log(isPc)
                     if(isPc){
-                        await signUp(email, password);
-                        navigate('/', {state: {}, replace: true});    
+                        await registerUser(email, password, role.current.value)
+                        navigateToUpdateProfile(email);   
                     }
                     else{
                         setError('Not a valid PC mail id');
                     }
                 }
                 else{
-                    await signUp(email, password);
-                    navigate('/', {state: {}, replace: true});
+                    await registerUser(email, password, role.current.value)
+                    navigateToUpdateProfile(email);
                 }
             }
             catch{
@@ -125,8 +139,8 @@ export default function SignUp () {
         <div className="input-group mb-4">
             <label className="input-group-text" htmlFor="inputGroupSelect01">Choose Role</label>
             <select className="form-select" id="inputGroupSelect01" placeholder="Choose Role" ref={role}>
-                <option value="1">Student</option>
-                <option value="2">Placement Coordinator</option>
+                <option value="Student">Student</option>
+                <option value="Placement Coordinator">Placement Coordinator</option>
             </select>
         </div>
 
