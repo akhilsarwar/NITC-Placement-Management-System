@@ -1,46 +1,49 @@
 import React, { useEffect, useState } from "react";
-import '../styles/userInfoStudent.css';
+import '../styles/userInfo.css';
 import { faCircleUser } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import LoaderAnim from "../components/loadingAnim";
+import { getDateString } from "../utilFunc";
 
-export default function UserInfoStudent () {
+export default function UserInfo () {
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState();
     const [details, setDetails] = useState();
     const url = process.env.REACT_APP_BACKEND_URL;
-    const { currentUser } = useAuth();
-    const reqUrl = url + '/studentDetails/' + currentUser.uid;
+    const { currentUser, role } = useAuth();
+    
+    const navigate = useNavigate();
 
     const startFetch = function(){
         setLoading(true);
         setError();
     }
 
-    const  toJavascriptDate = function (details){
-        let date = new Date(details.dob)
-        // console.log(date)
-        let day = String(date.getDate());
-        if(day.length === 1){
-            day = "0" + day;
-        }
-        let month = String(date.getMonth() + 1);
-        if(month.length === 1){
-            month = "0" + month;
-        }
-        let year = String (date.getFullYear());
-        details.dob = day + '-' + month + '-' + year;
-        return details;
+    const handleEditProfile = async function (){
+        setLoading(true); 
+        const stateObj = JSON.parse(JSON.stringify(details));
+        stateObj['isSignUpUpdation'] = false;
+        console.log(stateObj)
+        navigate('/updateProfile', {state : stateObj, replace: false});
+        setLoading(false);
     }
 
     useEffect(() =>  {
         startFetch();
-        axios.get(reqUrl)
+        const reqUrl = url + '/userInfo/' + currentUser.uid;
+        console.log(role)
+        axios.get(reqUrl, {
+            params: {
+                role: role
+            }
+        })
              .then((res) => {
-                setDetails(toJavascriptDate(res.data));
+                var respData = res.data;
+                setDetails(respData);
                 setLoading(false);
              })
              .catch((err) => {
@@ -48,7 +51,7 @@ export default function UserInfoStudent () {
                 setError('Failed to Load')
                 console.log(err);
              });
-    }, [reqUrl]);
+    }, []);
 
     return (
         <>
@@ -57,7 +60,7 @@ export default function UserInfoStudent () {
             {!loading
                 &&
 
-            <div className='userInfoStudentContainer'>
+            <div className='userInfoContainer'>
                 <div className='userIcon'>
                 <FontAwesomeIcon icon={faCircleUser}/>
                 </div>
@@ -86,9 +89,14 @@ export default function UserInfoStudent () {
                 <p>{details.contact }</p>
                 <br/>
                 <h4>Date of Birth</h4>
-                <p>{details.dob }</p>
+                <p>{getDateString(details.dob, 1)}</p>
                 <br/>
                 <button type="button" className="btn btn-secondary btn-lg">Download Resume</button>
+                <br />
+                <br />
+                <button type="button" className="btn btn-lg btn-primary" onClick={() => {
+                    handleEditProfile();
+                }} disabled={loading}>Edit Profile</button>
             </div>
             }
             

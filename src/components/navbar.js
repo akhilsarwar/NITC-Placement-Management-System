@@ -74,7 +74,7 @@ export default function NavBar (){
                     <FontAwesomeIcon icon={faCircleUser} />
                     </button>
                     <ul className="dropdown-menu user-dropdown dropdown-menu-end">
-                      <li><Link className="dropdown-item" to="/userInfoStudent">User Profile</Link></li>
+                      <li><Link className="dropdown-item" to="/userInfo">User Profile</Link></li>
                       <li><a className="dropdown-item" onClick={(e) => {
                         handleLogout(e);
                       }}>Logout</a></li>

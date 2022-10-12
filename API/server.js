@@ -49,6 +49,19 @@ app.get('/studentDetails/:id', (req, res) => {
 });
 
 
+app.get('/userInfo/:id', (req, res) => {
+    const id = req.params.id;
+    console.log(req.query);
+    const role = req.query.role;
+    if(role === "Student"){
+        const query = `SELECT * FROM Student WHERE uid='${id}'`;
+        conn .query(query, (err, result) => {
+            console.log(result);
+            res.send(result[0]);
+        });
+    }
+});
+
 
 //response body is a json object {sts: failure} or {sts: success}
 app.post('/updateUserProfile/:id', (req, res)=> {
@@ -89,5 +102,5 @@ app.post('/updateUserProfile/:id', (req, res)=> {
         }
         
     });
-    
+
 });

@@ -58,7 +58,7 @@ export function AuthProvider ({children}) {
             console.log('auth state changed');
             if(user){
                 let userRole = await getUserRole(user.uid);
-                setRole(role);
+                setRole(userRole);
             }
             setLoading(false);
         });

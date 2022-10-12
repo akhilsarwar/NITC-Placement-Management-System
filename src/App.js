@@ -7,8 +7,8 @@ import SignUp from './pages/signup.js';
 import { AuthProvider } from './context/AuthContext.js';
 import PrivateRoute from './components/PrivateRoute.js';
 import ResetPassword from './pages/passwordReset.js';
-import UserInfoStudent from './pages/userInfoStudent.js';
 import UpdateProfile from './pages/updateProfile.js';
+import UserInfo from './pages/userInfo.js';
 
 function App() {
   return (
@@ -19,7 +19,7 @@ function App() {
           <Routes>
             <Route path='/' element = {<PrivateRoute><NavBar/><Home/></PrivateRoute>} />
             <Route path='/aboutUs' element = {<PrivateRoute><NavBar/><AboutUs/></PrivateRoute>} />
-            <Route path='/userInfoStudent' element = {<PrivateRoute><NavBar/><UserInfoStudent/></PrivateRoute>}/>
+            <Route path='/userInfo' element = {<PrivateRoute><NavBar/><UserInfo/></PrivateRoute>}/>
             <Route path='/updateProfile' element = {<PrivateRoute><NavBar/><UpdateProfile/></PrivateRoute>}/>
             
             <Route path='/login' element = {<Login/>} />

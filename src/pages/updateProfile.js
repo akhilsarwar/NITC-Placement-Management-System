@@ -5,7 +5,8 @@ import axios from "axios";
 import { useAuth } from '../context/AuthContext.js';
 import { useLocation, useNavigate } from "react-router-dom";
 import { Alert } from "react-bootstrap";
-import '../styles/updateProfile.css'
+import '../styles/updateProfile.css';
+import { getDateString } from "../utilFunc.js";
 
 export default function UpdateProfile(){
 
@@ -125,7 +126,7 @@ export default function UpdateProfile(){
 
             <div className="mb-3">
                 <label htmlFor="dobUpdate" className="form-label">Date of Birth</label>
-                <input type="date" className="form-control" id="dobUpdate" ref={dob} defaultValue= {dob_}/>
+                <input type="date" className="form-control" id="dobUpdate" ref={dob} defaultValue= {getDateString(dob_, 0)}/>
             </div>  
 
             <div className="mb-3">
