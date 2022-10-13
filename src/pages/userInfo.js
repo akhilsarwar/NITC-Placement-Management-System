@@ -61,24 +61,43 @@ export default function UserInfo () {
                 &&
 
             <div className='userInfoContainer'>
+                {role==="Placement Coordinator" && <p>PLACEMENT COORDINATOR</p>}
                 <div className='userIcon'>
                 <FontAwesomeIcon icon={faCircleUser}/>
                 </div>
                 <br/>
                 <h1>{details.name}</h1>
                 <br/>
-                <h4>Roll No</h4>
-                <p>{details.rollNo}</p>
-                <br/>
-                <h4>Branch</h4>
-                <p>{details.branch}</p>
-                <br/>
-                <h4>Stream</h4>
-                <p>{details.stream}</p>
-                <br/>
-                <h4>CGPA</h4>
-                <p><b>{details.cgpa}</b></p>
-                <br/>
+                {role === "Student" && 
+                    <>
+                    <h4>Roll No</h4>
+                    <p>{details.rollNo}</p>
+                    <br/>
+                    <h4>Branch</h4>
+                    <p>{details.branch}</p>
+                    <br/>
+                    <h4>Stream</h4>
+                    <p>{details.stream}</p>
+                    <br/>
+                    <h4>CGPA</h4>
+                    <p><b>{details.cgpa}</b></p>
+                    <br/>
+                    </>
+                    
+                }
+                {
+                    role==="Placement Coordinator"
+                    &&
+                    <>
+                    <h4>Department</h4>
+                    <p>{ details.department }</p>
+                    <br/>
+                    <h4>POST</h4>
+                    <p>{ details.post }</p>
+                    <br/><br/>
+                    </>
+                    
+                }
                 <h4>Address</h4>
                 <p>{details.address}</p>
                 <br/>
@@ -91,13 +110,22 @@ export default function UserInfo () {
                 <h4>Date of Birth</h4>
                 <p>{getDateString(details.dob, 1)}</p>
                 <br/>
-                <button type="button" className="btn btn-secondary btn-lg">Download Resume</button>
-                <br />
-                <br />
+                {
+                    role==="Student" 
+                    &&
+                    <>
+                    <button type="button" className="btn btn-secondary btn-lg">Download Resume</button>
+                    <br />
+                    <br />
+                    </>
+                    
+                }
+                
                 <button type="button" className="btn btn-lg btn-primary" onClick={() => {
                     handleEditProfile();
                 }} disabled={loading}>Edit Profile</button>
             </div>
+
             }
             
         </>

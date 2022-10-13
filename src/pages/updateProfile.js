@@ -20,6 +20,8 @@ export default function UpdateProfile(){
     const resume = useRef();
     const dob = useRef();
     const cgpa = useRef();
+    const department = useRef();
+    const post = useRef();
 
     const navigate = useNavigate();
 
@@ -35,8 +37,10 @@ export default function UpdateProfile(){
     const dob_  = location.state.dob
     const cgpa_  = location.state.cgpa
     const isSignUpUpdation_ = location.state.isSignUpUpdation
+    const department_ = location.state.department
+    const post_ = location.state.post;
 
-    const { currentUser } = useAuth();
+    const { currentUser, role } = useAuth();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState();
     const [msg, setMsg] = useState();
@@ -52,16 +56,19 @@ export default function UpdateProfile(){
         const url = process.env.REACT_APP_BACKEND_URL +  '/updateUserProfile/' + currentUser.uid;
         startFetch();
         axios.post(url, {
-            'name': name.current.value,
-            'rollNo' : rollNo.current.value,
-            'email': email.current.value,
-            'branch' : branch.current.value,
-            'stream' : stream.current.value,
-            'address' : address.current.value,
-            'contact' : contact.current.value,
-            'resume' : resume.current.value,
-            'dob' : dob.current.value,
-            'cgpa': cgpa.current.value
+            'name': name.current ? name.current.value: null,
+            'rollNo' : rollNo.current ? rollNo.current.value: null,
+            'email': email.current ? email.current.value: null,
+            'branch' : branch.current ? branch.current.value: null,
+            'stream' : stream.current ? stream.current.value: null,
+            'address' : address.current ? address.current.value: null,
+            'contact' : contact.current ? contact.current.value: null,
+            'resume' : resume.current ? resume.current.value: null,
+            'dob' : dob.current ? dob.current.value: null,
+            'cgpa': cgpa.current ? cgpa.current.value: null,
+            'post': post.current ? post.current.value: null,
+            'department': department.current ? department.current.value: null,
+            'role': role
         }).then((result) => {
             const respData = result.data;
             if(respData.sts === "failure"){
@@ -95,18 +102,51 @@ export default function UpdateProfile(){
               <label htmlFor="emailUpdate" className="form-label">Email</label>
               <input type="text" className="form-control" id="emailUpdate" ref={email} defaultValue={email_}  required/>
             </div>
-            <div className="mb-3">
-              <label htmlFor="rollNoUpdate" className="form-label">Roll No</label>
-              <input type="text" className="form-control" id="rollNoUpdate" ref={rollNo} defaultValue= {rollNo_} required/>
-            </div>  
-            <div className="mb-3">
-                <label htmlFor="branchUpdate">Branch</label>
-                <input type="text" className="form-control" id="branchUpdate" ref={branch} defaultValue= {branch_} required/>
-            </div>
-            <div className="mb-3">
-                <label htmlFor="streamUpdate">Stream</label>
-                <input type="text" className="form-control" id="streamUpdate" ref={stream} defaultValue= {stream_} required/>
-            </div>
+            {
+                role==="Student"
+                &&
+                <>
+                    <div className="mb-3">
+                        <label htmlFor="rollNoUpdate" className="form-label">Roll No</label>
+                        <input type="text" className="form-control" id="rollNoUpdate" ref={rollNo} defaultValue= {rollNo_} required/>
+                    </div>  
+                    <div className="mb-3">
+                        <label htmlFor="branchUpdate">Branch</label>
+                        <input type="text" className="form-control" id="branchUpdate" ref={branch} defaultValue= {branch_} required/>
+                    </div>
+                    <div className="mb-3">
+                        <label htmlFor="streamUpdate">Stream</label>
+                        <input type="text" className="form-control" id="streamUpdate" ref={stream} defaultValue= {stream_} required/>
+                    </div>
+
+                    <div className="mb-3">
+                        <label htmlFor="cgpaUpdate" className="form-label">CGPA</label>
+                        <input type="number" step="0.01" className="form-control" id="cgpaUpdate" ref={cgpa} defaultValue= {cgpa_}/>
+                    </div>
+
+                    <div className="mb-3">
+                        <label className="form-label" htmlFor="resumeUpdate">Upload Resume</label>
+                        <input type="file" className="form-control" id="resumeUpdate" ref={resume} defaultValue= {resume_} required/>
+                    </div>
+                </>
+                
+            }
+            
+            {
+                role==="Placement Coordinator"
+                &&
+                <>
+                    <div className="mb-3">
+                        <label htmlFor="departmentUpdate" className="form-label">Department</label>
+                        <input type="text" className="form-control" id="departmentUpdate" ref={department} defaultValue= {department_} required/>
+                    </div>    
+                    <div className="mb-3">
+                        <label htmlFor="postUpdate" className="form-label">Post</label>
+                        <input type="text" className="form-control" id="postUpdate" ref={post} defaultValue= {post_} required/>
+                    </div>    
+                </>
+                
+            }
         
 
             <div className="mb-3">
@@ -119,20 +159,14 @@ export default function UpdateProfile(){
                 <input type="number" className="form-control" id="contactUpdate" ref={contact} defaultValue= {contact_} required/>
             </div>
 
-            <div className="mb-3">
-                <label htmlFor="cgpaUpdate" className="form-label">CGPA</label>
-                <input type="number" step="0.01" className="form-control" id="cgpaUpdate" ref={cgpa} defaultValue= {cgpa_}/>
-            </div>
+            
 
             <div className="mb-3">
                 <label htmlFor="dobUpdate" className="form-label">Date of Birth</label>
                 <input type="date" className="form-control" id="dobUpdate" ref={dob} defaultValue= {getDateString(dob_, 0)}/>
             </div>  
 
-            <div className="mb-3">
-                <label className="form-label" htmlFor="resumeUpdate">Upload Resume</label>
-                <input type="file" className="form-control" id="resumeUpdate" ref={resume} defaultValue= {resume_} required/>
-            </div>
+            
          
             <div className="mb-3">
             <button type="submit" className="btn btn-primary" disabled={loading}>Submit</button>
