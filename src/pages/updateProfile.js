@@ -90,7 +90,7 @@ export default function UpdateProfile(){
     }
 
     return(
-        <div className="updateProfileContainer" >
+        <div className="safeArea" >
         <h1 className="mb-4">Update Profile Info</h1>
         <form onSubmit={(e)=>{handleSubmit(e);}}>
             <div className="mb-3">

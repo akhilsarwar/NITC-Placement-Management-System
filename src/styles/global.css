@@ -88,4 +88,15 @@ body {
     height: 600px ;
   }
   
-  
+  .safeArea{
+      margin: 20px 20px;
+  }
+
+  .iconButton {
+    border-radius: 50%;
+    border: none;
+    background-color: transparent;
+    font-size: 20px;
+    text-decoration: none;
+    text-align: center;
+  }

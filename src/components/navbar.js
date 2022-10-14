@@ -1,7 +1,7 @@
 import {React, useState} from "react";
 import logo from '../assets/nitc_logo.png';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faHome, faPeopleGroup, faCircleUser } from '@fortawesome/free-solid-svg-icons'
+import { faHome, faPeopleGroup, faCircleUser, faUsers } from '@fortawesome/free-solid-svg-icons'
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Link } from "react-router-dom";
@@ -12,19 +12,13 @@ export default function NavBar (){
     const [showMenu, setShowMenu] = useState(false); 
     const navigate = useNavigate();
     const [focusTab, setFocusTab] = useState('home');
-    const { logout } = useAuth();
+    const { logout, role } = useAuth();
     const [loading, setLoading] = useState(false);
 
-    const navigateHome =  function (event) {
-      // event.preventDefault();
-      setFocusTab('home');
-      navigate('/', {state: {}, replace: false});
-    }
 
-    const navigateAboutUs = function (event) {
-      // event.preventDefault();
-      setFocusTab('aboutUs');
-      navigate('/AboutUs', {state: {}, replace: false});
+    const navigateToPage = function (event, tabName, path, state, shouldReplace){
+      setFocusTab(tabName);
+      navigate(path, {state: state, replace: shouldReplace})
     }
 
     const toggle = function () {
@@ -60,17 +54,23 @@ export default function NavBar (){
             <div className={"collapse navbar-collapse " + (showMenu ? "show": "")} id="navbarNav">
               <ul className="navbar-nav ms-auto">
                 <li className='nav-item'>
-                  <a className={'nav-link' + (focusTab === 'home' ? ' active': '')} onClick={(e) => {navigateHome(e)}}>
+                  <a className={'nav-link' + (focusTab === 'home' ? ' active': '')} onClick={(e) => {navigateToPage(e, 'home', '/', {}, false)}}>
                     {focusTab === 'home' && <FontAwesomeIcon icon={faHome} />} Home</a>
                 </li>
                 <li className='nav-item'>
-                  <a className={'nav-link' + (focusTab === 'aboutUs' ? ' active': '')} onClick={(e)=> {navigateAboutUs(e)}}>
+                  <a className={'nav-link' + (focusTab === 'aboutUs' ? ' active': '')} onClick={(e)=> {navigateToPage(e, 'aboutUs', '/aboutUs', {}, false)}}>
                     {focusTab === "aboutUs" && <FontAwesomeIcon icon={faPeopleGroup} /> }
                     About Us</a>
                 </li>
 
+                <li className='nav-item'>
+                  <a className={'nav-link' + (focusTab === 'recruiter' ? ' active': '')} onClick={(e)=> {navigateToPage(e, 'recruiter', '/recruiter', {}, false)}}>
+                    {focusTab === "recruiter" && <FontAwesomeIcon icon={faUsers} /> }
+                    Recruiter</a>
+                </li>
+
                 <li className="nav-item dropdown">
-                    <button className="nav-link dropdown-toggle user" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <button className="nav-link dropdown-toggle iconButton navUser" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     <FontAwesomeIcon icon={faCircleUser} />
                     </button>
                     <ul className="dropdown-menu user-dropdown dropdown-menu-end">

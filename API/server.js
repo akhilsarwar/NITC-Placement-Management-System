@@ -150,3 +150,17 @@ app.post('/updateUserProfile/:id', (req, res)=> {
     
 
 });
+
+
+app.post('/addRecruiter', (req, res) => {
+    const data = req.body;
+    conn.query(`INSERT INTO Recruiter (name, jobRole, jobDescription, ctc, minCgpaRequired, jobLocation, jobRequirements) values (?, ?, ?, ?, ?, ?, ?)`, [data.name, data.jobRole, data.jobDescription, data.ctc, data.minCgpaRequired, data.jobLocation, data.jobRequirements], (err, result)=>{
+        if(err){
+            console.log(err);
+            res.send({"sts": "failure"});
+        }
+        else{
+            res.send({"sts": "success"});
+        }
+    });
+});

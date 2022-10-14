@@ -60,7 +60,7 @@ export default function UserInfo () {
             {!loading
                 &&
 
-            <div className='userInfoContainer'>
+            <div className='safeArea userInfoContainer'>
                 {role==="Placement Coordinator" && <p>PLACEMENT COORDINATOR</p>}
                 <div className='userIcon'>
                 <FontAwesomeIcon icon={faCircleUser}/>
