@@ -1,4 +1,8 @@
-# Getting Started with Create React App
+# NITC PLACEMENT MANAGEMENT SYSTEM
+
+
+
+## Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
@@ -68,3 +72,19 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+<br/>
+
+
+## Getting started with the server code (locally)
+
+- Navigate to the API directory
+```bash
+cd API
+```
+- start the server
+```bash
+node server.js
+```
+- Server is up now and running at http://localhost:3001
+
