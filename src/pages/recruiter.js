@@ -61,9 +61,14 @@ export default function Recruiter(){
             </button>
           </div>
 
-        <div className="mb-4">
-        <button type="button" className="btn btn-primary" onClick={(e)=>{navigate('/addRecruiter', {state: {}, replace: false})}}>Add Recruiter</button>
-        </div>
+        {
+            role === "Placement Coordinator"
+            &&
+            <div className="mb-4">
+            <button type="button" className="btn btn-primary" onClick={(e)=>{navigate('/addRecruiter', {state: {}, replace: false})}}>Add Recruiter</button>
+            </div>
+        }
+        
           
           
         {!loading && recArray.length > 0 && 
