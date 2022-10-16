@@ -164,3 +164,42 @@ app.post('/addRecruiter', (req, res) => {
         }
     });
 });
+
+
+
+app.get('/getRecruiters/:id?', (req, res) => {
+    const rid = req.params.id;
+    var query = "";
+    if(rid === undefined){
+        query = `SELECT * FROM Recruiter`;
+    }
+    else{
+        query = `SELECT * FROM Recruiter WHERE id='${rid}'`;
+        
+    }
+
+    conn.query(query, (err, result) => {
+        if(err){
+            console.log(err);
+            res.send({"sts": "failure"});
+        }
+        else{
+            const respData = rid === undefined ? result: result[0];
+            res.send({"sts": "success", "data": respData});
+        }
+    })
+})
+
+
+app.delete('/deleteRecruiter/:id?', (req, res)=>{
+    const rid = req.params.id;
+    conn.query(`DELETE FROM Recruiter WHERE id=?`, [rid], (err, result)=>{
+        if(err){
+            console.log(err);
+            res.send({"sts": "failure"});
+        }
+        else{
+            res.send({"sts": "success"});
+        }
+    })
+});
