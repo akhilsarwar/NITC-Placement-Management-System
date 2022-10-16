@@ -12,7 +12,7 @@ export function useAuth(){
 export function AuthProvider ({children}) {
 
     const [currentUser, setCurrentUser] = useState();
-    const [loading, setLoading] = useState(true);
+    const [authloading, setAuthLoading] = useState(true);
     const [role, setRole] = useState();
 
     function login(email, password){
@@ -54,13 +54,15 @@ export function AuthProvider ({children}) {
 
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged(async user => {
+            setAuthLoading(true);
             setCurrentUser(user);
             console.log('auth state changed');
             if(user){
                 let userRole = await getUserRole(user.uid);
                 setRole(userRole);
+                console.log('User role changed')
             }
-            setLoading(false);
+            setAuthLoading(false);
         });
         return unsubscribe;
     }, []);
@@ -77,7 +79,7 @@ export function AuthProvider ({children}) {
 
     return (
         <AuthContext.Provider value={value}>
-            {!loading && children} 
+            {!authloading && children} 
         </AuthContext.Provider>
     );
 }

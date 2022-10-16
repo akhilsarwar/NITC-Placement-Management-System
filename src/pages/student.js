@@ -8,8 +8,7 @@ import axios from "axios";
 import TableView from "../components/tableView";
 import LoaderAnim from "../components/loadingAnim";
 
-export default function Recruiter(){
-
+export default function Student(){
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState();
     const [recArray, setRecArray] = useState();
@@ -21,10 +20,10 @@ export default function Recruiter(){
         setLoading(true);
         setError();
     }
-    
+
     useEffect(()=>{
         startFetch();
-        const reqUrl = url + '/getRecruiters';
+        const reqUrl = url + '/getStudents';
         
         axios.get(reqUrl, {})
              .then((res) => {
@@ -47,10 +46,9 @@ export default function Recruiter(){
     }, []);
 
 
-
     return (
         <div className="safeArea">
-        <h1 className="mb-4">Recruiters</h1>
+        <h1 className="mb-4">Students</h1>
 
         <div className="input-group mb-4 searchBar">
             <div className="form-floating">
@@ -61,24 +59,15 @@ export default function Recruiter(){
             <FontAwesomeIcon icon={faSearch} />
             </button>
           </div>
-
-        {
-            role === "Placement Coordinator"
-            &&
-            <div className="mb-4">
-            <button type="button" className="btn btn-primary" onClick={(e)=>{navigate('/addRecruiter', {state: {}, replace: false})}}>Add Recruiter</button>
-            </div>
-        }
         
-          
         {
             loading
             &&
             <LoaderAnim/>
         }
-
+          
         {!loading && recArray.length > 0 && 
-        <TableView tableHeads={["Company", "Job Role", "CTC", "Job Location", "Action"]} tableData={recArray} displayFields={["name", "jobRole", "ctc", "jobLocation"]} dataViewLink='/viewRecruiter' idField="id"/>
+        <TableView tableHeads={["Name", "Roll No", "Branch", "Stream", "Action"]} tableData={recArray} displayFields={["name", "rollNo", "branch", "stream"]} dataViewLink='/viewStudent' idField="uid"/>
         }
 
         {!loading && recArray.length == 0 && 

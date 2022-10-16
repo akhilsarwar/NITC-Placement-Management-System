@@ -27,8 +27,6 @@ export default function AddRecruiter(){
     const getRequirement = function (e, to){
         jobRequirements.current.value = jobReqArray[currentjobReq + to - 1];
         setCurrentJobReq(currentjobReq + to);
-        // var field = document.getElementById('jobReqArea');
-        // field.value = jobReqArray[currentjobReq - 1]; 
     }
 
     

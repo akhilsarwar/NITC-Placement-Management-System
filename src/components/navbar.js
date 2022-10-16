@@ -1,7 +1,9 @@
+//TODO: fix the tab focus and current tab mismatch issue when reloading
+
 import {React, useState} from "react";
 import logo from '../assets/nitc_logo.png';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faHome, faPeopleGroup, faCircleUser, faUsers } from '@fortawesome/free-solid-svg-icons'
+import { faHome, faPeopleGroup, faCircleUser, faUsers, faUserGraduate } from '@fortawesome/free-solid-svg-icons'
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Link } from "react-router-dom";
@@ -68,6 +70,16 @@ export default function NavBar (){
                     {focusTab === "recruiter" && <FontAwesomeIcon icon={faUsers} /> }
                     Recruiter</a>
                 </li>
+
+                {
+                  role === "Placement Coordinator"
+                  &&
+                  <li className='nav-item'>
+                    <a className={'nav-link' + (focusTab === 'student' ? ' active': '')} onClick={(e)=> {navigateToPage(e, 'student', '/student', {}, false)}}>
+                      {focusTab === "student" && <FontAwesomeIcon icon={faUserGraduate} /> }
+                      Student</a>
+                  </li> 
+                }
 
                 <li className="nav-item dropdown">
                     <button className="nav-link dropdown-toggle iconButton navUser" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">

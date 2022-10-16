@@ -12,6 +12,8 @@ import UserInfo from './pages/userInfo.js';
 import AddRecruiter from './pages/addRecruiter.js';
 import Recruiter from './pages/recruiter.js';
 import ViewRecruiter from './pages/viewRecruiter.js';
+import Student from './pages/student.js';
+import ViewStudent from './pages/viewStudent.js';
 
 
 function App() {
@@ -27,7 +29,9 @@ function App() {
             <Route path='/updateProfile' element = {<PrivateRoute><NavBar/><UpdateProfile/></PrivateRoute>}/>
             <Route path='/addRecruiter' element = {<PrivateRoute><NavBar/><AddRecruiter/></PrivateRoute>}/>
             <Route path='/viewRecruiter' element = {<PrivateRoute><NavBar/><ViewRecruiter/></PrivateRoute>}/>
+            <Route path='/viewStudent' element = {<PrivateRoute><NavBar/><ViewStudent/></PrivateRoute>}/>
             <Route path='/recruiter' element = {<PrivateRoute><NavBar/><Recruiter/></PrivateRoute>}/>
+            <Route path='/student' element = {<PrivateRoute><NavBar/><Student/></PrivateRoute>}/>
             <Route path='/login' element = {<Login/>} />
             <Route path='/signup' element = {<SignUp/>}/>
             <Route path='/resetPassword' element = {<ResetPassword/>}/>

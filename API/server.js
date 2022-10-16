@@ -203,3 +203,27 @@ app.delete('/deleteRecruiter/:id?', (req, res)=>{
         }
     })
 });
+
+
+
+app.get('/getStudents/:id?', (req, res) => {
+    const sid = req.params.id;
+    var query = "";
+    if(sid === undefined){
+        query = `SELECT * FROM Student`;
+    }
+    else{
+        query = `SELECT * FROM Student WHERE uid='${sid}'`;
+        
+    }
+    conn.query(query, (err, result) => {
+        if(err){
+            console.log(err);
+            res.send({"sts": "failure"});
+        }
+        else{
+            const respData = sid === undefined ? result: result[0];
+            res.send({"sts": "success", "data": respData});
+        }
+    })
+})

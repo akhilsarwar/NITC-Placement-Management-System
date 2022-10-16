@@ -5,6 +5,8 @@ export default function TableView(props){
     const tableHeads = props.tableHeads;
     const tableData = props.tableData;
     const displayFields = props.displayFields;
+    const dataViewLink = props.dataViewLink;
+    const idField = props.idField;
     return (
         <table className="table">
         <thead>
@@ -34,7 +36,7 @@ export default function TableView(props){
                                 );
                             })
                         }
-                        <td><Link to={'/viewRecruiter'} state={{id: element.id}} type="button" className="btn btn-primary">View</Link></td>
+                        <td><Link to={dataViewLink} state={{id: element[idField]}} type="button" className="btn btn-primary">View</Link></td>
                     </tr>
                 );
             })
