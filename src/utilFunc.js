@@ -1,3 +1,6 @@
+
+// format - 1 ------> dd-mm-yyyy
+// format - 0 ------> yyyy-mm-dd
 export const getDateString = function (date_, format) {
     let date = new Date(date_)
     let day = String(date.getDate());
@@ -18,3 +21,13 @@ export const getDateString = function (date_, format) {
     }
     return dateString;
 }   
+
+//format hh:mm:ss
+export const getTimeString = function (date_) {
+    let date = new Date(date_)
+    let hours = String(date.getHours());
+    let seconds = String(date.getSeconds());
+    let minutes = String(date.getMinutes());
+
+    return hours + '-' + minutes + '-' + seconds;
+}

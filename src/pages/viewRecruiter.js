@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import LoaderAnim from "../components/loadingAnim";
+import { getDateString, getTimeString } from "../utilFunc";
 
 export default function ViewRecruiter(){
 
@@ -15,8 +16,8 @@ export default function ViewRecruiter(){
     const location = useLocation();
     const [msg, setMsg] = useState();
     const navigate = useNavigate();
+    const [hasApplied, setHasApplied] = useState();
     
-    console.log(location);
     const rid = location.state.id;
 
     const startFetch = function(){
@@ -34,11 +35,33 @@ export default function ViewRecruiter(){
                 const respData = res.data;
                 if(respData.sts === "failure"){
                     setError('Failed to Load')
+                    //TODO: handle this case where data fails to load
+                    throw "Failed to Load"
                 }
                 else{
                     respData.data.jobRequirements = JSON.parse(respData.data.jobRequirements);
                     setDetails(respData.data);
-                    console.log(respData.data)
+                }
+                // setLoading(false);
+
+                if(role === "Student")
+                    return getAppliedStatus();
+                else if(role === "Placement Coordinator"){
+                    return true;
+                }
+                    
+             })
+             .then((res) => {
+                if(role === "Student"){
+                    const respData = res.data;
+                    if(respData.sts === "failure"){
+                        setError('Failed to Load')
+                        //TODO: handle this case where data fails to load
+                        throw "Failed to Load"
+                    }
+                    else{
+                        setHasApplied(respData.data);
+                    }
                 }
                 setLoading(false);
              })
@@ -65,6 +88,7 @@ export default function ViewRecruiter(){
                     setMsg('Deletion Successful')
                     navigate('/recruiter', {state: {}, replace: true});
                 }
+                setLoading(false);
             })
             .catch((err) => {
                 setLoading(false);
@@ -72,6 +96,46 @@ export default function ViewRecruiter(){
             })
     }
 
+
+
+    const handleApply = function () {
+        startFetch();
+        const reqUrl = url + '/apply';
+        const dateNow = new Date().toISOString()
+        axios.post(reqUrl, {
+            sid: currentUser.uid,
+            rid: rid,
+            appliedTime: getDateString(dateNow, 0) + " " + getTimeString(dateNow) 
+        })
+        .then((res) => {
+            const respData = res.data;
+            if(respData.sts === "failure"){
+                setError('Failed to Apply')
+            }
+            else{
+                setHasApplied(true);
+                setMsg('Successfully Applied')
+            }
+            setLoading(false);
+        })
+        .catch((err) => {
+            setLoading(false);
+            setError('Failed to Apply')
+        })
+
+    }
+
+
+    const getAppliedStatus = function () {
+        const reqUrl = url + '/getAppliedStatus';
+        return axios.get(reqUrl, {
+            params: {
+                sid: currentUser.uid,
+                rid: rid
+            }
+        })
+    }
+    
 
     return (
 
@@ -119,6 +183,19 @@ export default function ViewRecruiter(){
                         <button type="button" className="btn btn-danger btn-lg" onClick={()=>{
                             handleDelete();
                         }}>Delete</button>
+                    
+                    }
+                    {
+                        (role === "Student" && !hasApplied)
+                        &&
+                        <button type="button" className="btn btn-success btn-lg" onClick={()=>{
+                            handleApply();
+                        }}>Apply</button>
+                    }
+                    {
+                        (role === "Student" && hasApplied)
+                        &&
+                        <button type="button" className="btn btn-secondary btn-lg" disabled>Applied</button>
                     }
                     
                 </>

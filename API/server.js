@@ -227,3 +227,44 @@ app.get('/getStudents/:id?', (req, res) => {
         }
     })
 })
+
+
+
+app.get('/getAppliedStatus', (req, res) => {
+    const sid = req.query.sid;
+    const rid = req.query.rid;
+
+    conn.query('SELECT * FROM Applied WHERE sid=? AND rid=?', [sid, rid], (err, result) => {
+        if(err){
+            console.log(err);
+            res.send({"sts": "failure"});
+        }
+        else{
+            if(result.length > 0){
+                res.send({"sts": "success", "data": true});
+                console.log(new Date(result[0].appliedTime).getHours());
+            }
+            else{
+                res.send({"sts": "success", "data": false});
+            }
+        }
+    })
+})
+
+
+
+app.post('/apply', (req, res) => {
+    const sid = req.body.sid;
+    const rid = req.body.rid;
+    const appliedTime = req.body.appliedTime;
+    conn.query('INSERT INTO Applied (sid, rid, appliedTime) values (?, ?, ?)', [sid, rid, appliedTime], (err, result)=> {
+        if(err){
+            console.log(err);
+            res.send({"sts": "failure"});
+        }
+        else{
+            res.send({"sts": "success"});
+        }
+    })
+
+})

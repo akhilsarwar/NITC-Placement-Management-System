@@ -50,9 +50,13 @@ create table Notifications(
     dateTime datetime NOT NULL
 );
 
-create table PCMails(
-    email varchar(100);
-    primary key(email);
+create table Applied(
+    sid varchar(150) NOT NULL,
+    rid varchar(150) NOT NULL,
+    foreign key(sid) references Student(uid),
+    foreign key(rid) references Recruiter(id)
+    appliedTime datetime,
+    primary key(sid, rid)
 );
 
 INSERT INTO `nitc_pms`.`pcmails` (`email`) VALUES ('pc1@gmail.com');
