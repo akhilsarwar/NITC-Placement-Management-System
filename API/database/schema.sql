@@ -7,6 +7,7 @@ create table Recruiter(
     minCgpaRequired float,
     jobLocation varchar(200),
     jobRequirements JSON,
+    hiringStatus tinyint(1),
     PRIMARY KEY(id)
 );
 

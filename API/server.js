@@ -268,3 +268,18 @@ app.post('/apply', (req, res) => {
     })
 
 })
+
+
+app.get('/getApplied', (req, res) => {
+    const sid = req.query.sid;
+    const query = "SELECT * FROM Recruiter R WHERE R.id IN (SELECT A.rid FROM Applied A WHERE A.sid = ?)";
+    conn.query(query, [sid], (err, result) => {
+        if(err){
+            console.log(err);
+            res.send({"sts": "failure"});
+        }
+        else{
+            res.send({"sts": "success", "data" : result});
+        }
+    });
+})

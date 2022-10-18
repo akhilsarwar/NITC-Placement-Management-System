@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { faSearch } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faClock, faSearch } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import '../styles/recruiter.css'
 import { useAuth } from "../context/AuthContext";
@@ -13,6 +13,7 @@ export default function Recruiter(){
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState();
     const [recArray, setRecArray] = useState();
+    const [appliedRec, setAppliedRec] = useState();
     const url = process.env.REACT_APP_BACKEND_URL;
     const { currentUser, role } = useAuth();
     const navigate = useNavigate();
@@ -20,6 +21,32 @@ export default function Recruiter(){
     const startFetch = function(){
         setLoading(true);
         setError();
+    }
+
+    const setHiringStatusIcon = function (arr){
+        for(var i = 0; i < arr.length; i++){
+            if(arr[i].hiringStatus == 0){
+                arr[i]['hiringIcon'] = <span>
+                    <FontAwesomeIcon icon={faClock} className="me-2" style={{color: "orange"}}/>
+                    Pending
+                </span>
+            }else{
+                arr[i]['hiringIcon'] = <span>
+                    <FontAwesomeIcon icon={faCheck} className="me-2"
+                    style={{color: "green"}}/>
+                    Hiring Over
+                </span>
+            }
+        }
+    }
+
+    const getApplied = function(){
+        const reqUrl = url + '/getApplied';
+        return axios.get(reqUrl, {
+            params: {
+                sid: currentUser.uid
+            }
+        });
     }
     
     useEffect(()=>{
@@ -34,9 +61,27 @@ export default function Recruiter(){
                     setError('Failed to Load')
                 }
                 else{
+                    setHiringStatusIcon(respData.data);
                     setRecArray(respData.data); 
+                    
                 }
-                setLoading(false);
+                if(role === "Student"){
+                    return getApplied()
+                }
+                else{
+                    return true;
+                }
+                
+             })
+             .then((res) => {
+
+                if(role === "Student"){
+                    const respData = res.data;
+                    setHiringStatusIcon(respData.data);
+                    setAppliedRec(respData.data);
+                }
+            
+                setLoading(false);    
              })
              .catch((err) => {
                 console.log(err);
@@ -78,13 +123,31 @@ export default function Recruiter(){
         }
 
         {!loading && recArray.length > 0 && 
-        <TableView tableHeads={["Company", "Job Role", "CTC", "Job Location", "Action"]} tableData={recArray} displayFields={["name", "jobRole", "ctc", "jobLocation"]} dataViewLink='/viewRecruiter' idField="id"/>
+        <TableView tableHeads={["Company", "Job Role", "CTC", "Job Location", "Hiring Status", "Action"]} tableData={recArray} displayFields={["name", "jobRole", "ctc", "jobLocation", "hiringIcon"]} dataViewLink='/viewRecruiter' idField="id" />
         }
 
         {!loading && recArray.length == 0 && 
             <center>
                 <h2>No Data</h2>
             </center>
+        }
+
+        {
+            role=="Student"
+            &&
+            <>
+                <h2 style={{marginTop: "100px"}} className="mb-4">Applied</h2>
+                {
+                    !loading && appliedRec.length > 0
+                    &&
+                    <TableView tableHeads={["Company", "Job Role", "CTC", "Job Location", "Hiring Status", "Action"]} tableData={appliedRec} displayFields={["name", "jobRole", "ctc", "jobLocation", "hiringIcon"]} dataViewLink='/viewRecruiter' idField="id" />
+                }
+                {!loading && appliedRec.length == 0 && 
+                    <center>
+                        <h2>No Data</h2>
+                    </center>
+                }
+            </>
         }
                    
         </div>
