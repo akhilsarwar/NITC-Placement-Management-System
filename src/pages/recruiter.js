@@ -51,7 +51,10 @@ export default function Recruiter(){
     
     useEffect(()=>{
         startFetch();
-        const reqUrl = url + '/getRecruiters';
+        
+        let reqUrl = url + '/getRecruiters';
+        reqUrl += `?role=${role}`
+        reqUrl += `&uid=${currentUser.uid}`
         
         axios.get(reqUrl, {})
              .then((res) => {

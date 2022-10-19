@@ -169,9 +169,16 @@ app.post('/addRecruiter', (req, res) => {
 
 app.get('/getRecruiters/:id?', (req, res) => {
     const rid = req.params.id;
+    const role = req.query.role;
+    const sid = req.query.uid;
+
     var query = "";
     if(rid === undefined){
         query = `SELECT * FROM Recruiter`;
+        if(role === "Student"){
+            
+            query = `SELECT * FROM Recruiter R WHERE R.minCgpaRequired <= (SELECT cgpa FROM Student S WHERE S.uid = '${sid}')`;
+        }
     }
     else{
         query = `SELECT * FROM Recruiter WHERE id='${rid}'`;
@@ -187,7 +194,10 @@ app.get('/getRecruiters/:id?', (req, res) => {
             const respData = rid === undefined ? result: result[0];
             res.send({"sts": "success", "data": respData});
         }
-    })
+    });
+
+
+
 })
 
 
