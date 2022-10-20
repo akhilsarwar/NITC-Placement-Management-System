@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import LoaderAnim from "../components/loadingAnim";
 import { getDateString } from "../utilFunc";
+import TextAnim from "../components/textAnim.js";
 
 export default function UserInfo () {
 
@@ -61,6 +62,20 @@ export default function UserInfo () {
                 &&
 
             <div className='safeArea userInfoContainer'>
+                
+                {
+                    role === "Student"
+                    &&
+                    details.placedAt !== null
+                    &&
+                    <center>
+                    <TextAnim primaryText="Congratulations" secondaryText={`You are placed at ${details.placedAt}`}/>
+                    </center>
+
+                }
+                
+                
+
                 {role==="Placement Coordinator" && <p>PLACEMENT COORDINATOR</p>}
                 <div className='userIcon'>
                 <FontAwesomeIcon icon={faCircleUser}/>

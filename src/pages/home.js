@@ -7,6 +7,7 @@ import image3 from '../assets/image3.jpg';
 import '../styles/home.css';
 import { useAuth } from "../context/AuthContext.js";
 
+
 export default function Home() {
     const { currentUser } = useAuth();
     console.log(currentUser);
@@ -56,6 +57,10 @@ export default function Home() {
     </Carousel>
  
 </div>
+
+      <center>
+        
+      </center>
        <Footer/>
         </>
     );

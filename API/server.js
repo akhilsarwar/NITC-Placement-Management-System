@@ -293,3 +293,18 @@ app.get('/getApplied', (req, res) => {
         }
     });
 })
+
+
+app.patch('/updatePlacedAt/:id', (req, res) =>{
+    const placedAt = req.body.placedAt;
+    const id = req.params.id;
+    conn.query('UPDATE Student SET placedAt = ? WHERE uid = ?', [placedAt, id], (err, result) => {
+        if(err){
+            console.log(err);
+            res.send({"sts": "failure"});
+        }
+        else{
+            res.send({"sts": "success"});
+        }
+    })
+})
