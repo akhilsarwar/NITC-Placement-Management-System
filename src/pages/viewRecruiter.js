@@ -1,10 +1,12 @@
 import React from "react";
 import { useAuth } from "../context/AuthContext";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import LoaderAnim from "../components/loadingAnim";
 import { getDateString, getTimeString } from "../utilFunc";
+import TextAnim from "../components/textAnim";
+import ConfirmationDialog from "../components/confirmationDialog";
 
 export default function ViewRecruiter(){
 
@@ -17,20 +19,29 @@ export default function ViewRecruiter(){
     const [msg, setMsg] = useState();
     const navigate = useNavigate();
     const [hasApplied, setHasApplied] = useState();
+    const [isPlaced, setIsPlaced] = useState();
+    const [isHiring, setIsHiring] = useState();
+
     
     const rid = location.state.id;
+    const confirmDialogRef = useRef();
 
     const startFetch = function(){
         setLoading(true);
         setError();
     }
 
+    const getPlacementStatus = function (){
+        const reqUrl = url + '/getPlacementStatus/' + currentUser.uid;
+        return axios.get(reqUrl);
+    }
 
     useEffect(()=>{
         startFetch();
         const reqUrl = url + '/getRecruiters/' + rid;
         
         axios.get(reqUrl, {})
+            //getting the recruiter details
              .then((res) => {
                 const respData = res.data;
                 if(respData.sts === "failure"){
@@ -41,8 +52,8 @@ export default function ViewRecruiter(){
                 else{
                     respData.data.jobRequirements = JSON.parse(respData.data.jobRequirements);
                     setDetails(respData.data);
+                    setIsHiring(respData.data.hiringStatus);
                 }
-                // setLoading(false);
 
                 if(role === "Student")
                     return getAppliedStatus();
@@ -61,6 +72,22 @@ export default function ViewRecruiter(){
                     }
                     else{
                         setHasApplied(respData.data);
+                        return getPlacementStatus();
+                    }
+                }
+                return true;
+             })
+             //finding whether the student is placed or not
+             .then((res) => {
+                if(role === "Student"){
+                    const respData = res.data;
+                    if(respData.sts === "failure"){
+                        setError('Failed to Load')
+                        //TODO: handle this case where data fails to load
+                        throw "Failed to Load"
+                    }
+                    else{
+                        setIsPlaced(respData.data);
                     }
                 }
                 setLoading(false);
@@ -135,6 +162,29 @@ export default function ViewRecruiter(){
             }
         })
     }
+
+
+    const changeHiringStatus = function(){
+        confirmDialogRef.current.closeDialog();
+        setLoading(true);
+        const reqUrl = url + '/changeHiringStatus/' + rid;
+        axios.patch(reqUrl)
+        .then((res) => {
+            const respData = res.data;
+            if(respData.sts === "failure"){
+               throw "error" 
+            }
+            else{
+                setIsHiring(0);
+            }
+            setLoading(false);
+        })
+        .catch(err => {
+            //TODO: Handle how to display the error --- toast notifications preferred or an Alert
+            setLoading(false);
+        });
+    }
+    
     
 
     return (
@@ -180,24 +230,61 @@ export default function ViewRecruiter(){
                     { 
                         role === "Placement Coordinator"
                         &&
-                        <button type="button" className="btn btn-danger btn-lg" onClick={()=>{
+                        <div className="mb-3">
+                            <button type="button" className="btn btn-danger btn-lg" onClick={()=>{
                             handleDelete();
                         }}>Delete</button>
-                    
+                        </div>
+                        
+                        
                     }
                     {
-                        (role === "Student" && !hasApplied)
+                        role === "Placement Coordinator"
+                        && isHiring === 1 &&
+                        <>
+                            <div className="mb-3">
+                                <button type="button" className="btn btn-danger btn-lg" onClick={()=>{
+                                confirmDialogRef.current.openDialog();
+                            }}>Change Hiring Status</button>
+                            </div>
+                        
+                            
+                            <ConfirmationDialog ref={confirmDialogRef} title="Turn off Hiring" dialogBody={
+                                        <p>
+                                            Are you sure you want to turn off Hiring ?
+                                        </p>
+                            } onModalConfirm={changeHiringStatus}/>
+                        </>
+                        
+                    }
+
+                    {
+                        (role === "Student" && !hasApplied && !isPlaced && isHiring===1)
                         &&
-                        <button type="button" className="btn btn-success btn-lg" onClick={()=>{
-                            handleApply();
-                        }}>Apply</button>
+                        <div className="mb-3">
+                            <button type="button" className="btn btn-success btn-lg" onClick={()=>{
+                                handleApply();
+                            }}>Apply</button>
+                        </div>
+                        
                     }
                     {
-                        (role === "Student" && hasApplied)
+                        (role === "Student" && hasApplied && !isPlaced)
                         &&
-                        <button type="button" className="btn btn-secondary btn-lg" disabled>Applied</button>
+                        <div className="mb-3">
+                            <button type="button" className="btn btn-secondary btn-lg" disabled>Applied</button>
+                        </div>
+                        
                     }
-                    
+                    {
+                        (role === "Student" && isPlaced)
+                        &&
+                        <center>
+                            <TextAnim primaryText="Congratulations" secondaryText="You are already placed"/>
+                        </center>
+                        
+                    }
+
                 </>
                 
             }

@@ -62,8 +62,14 @@ app.get('/userInfo/:id', (req, res) => {
         query = `SELECT * FROM PC WHERE uid = '${id}'`;
     }
     conn .query(query, (err, result) => {
-        console.log(result);
-        res.send(result[0]);
+        if(err){
+            console.log(err);
+            res.send({sts: "failure"});
+        }
+        else{
+            res.send({sts: "success", data: result[0]});
+        }
+        
     });
 });
 
@@ -252,7 +258,6 @@ app.get('/getAppliedStatus', (req, res) => {
         else{
             if(result.length > 0){
                 res.send({"sts": "success", "data": true});
-                console.log(new Date(result[0].appliedTime).getHours());
             }
             else{
                 res.send({"sts": "success", "data": false});
@@ -305,6 +310,45 @@ app.patch('/updatePlacedAt/:id', (req, res) =>{
         }
         else{
             res.send({"sts": "success"});
+        }
+    })
+})
+
+
+app.get('/getPlacementStatus/:id', (req, res) => {
+    const id = req.params.id;
+    conn.query('SELECT placedAT from Student WHERE uid = ?', [id], (err, result) => {
+        if(err){
+            console.log(err);
+            res.send({"sts": "failure"});
+        }
+        else{
+            res.send({"sts": "success", data: result[0] === null ? false: true});
+        }
+    })
+})
+
+
+
+app.patch('/changeHiringStatus/:id', (req, res) => {
+    const rid = req.params.id;
+    // console.log(rid)
+    conn.query('SELECT hiringStatus FROM Recruiter WHERE id = ?', [rid], (err, result) => {
+        if(err){
+            console.log(err);
+            res.send({"sts": "failure"});
+        }
+        else{
+            const now = result[0].hiringStatus === 0 ? 1: 0;
+            conn.query('UPDATE Recruiter SET hiringStatus=? WHERE id=?', [now, rid], (err, result)=>{
+                if(err){
+                    console.log(err);
+                    res.send({"sts": "failure"});
+                }
+                else{
+                    res.send({"sts": "success"});
+                }       
+            });
         }
     })
 })

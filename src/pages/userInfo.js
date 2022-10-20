@@ -16,6 +16,7 @@ export default function UserInfo () {
     const [details, setDetails] = useState();
     const url = process.env.REACT_APP_BACKEND_URL;
     const { currentUser, role } = useAuth();
+    const [placedCompany, setPlacedCompany] = useState(null);
     
     const navigate = useNavigate();
 
@@ -33,10 +34,14 @@ export default function UserInfo () {
         setLoading(false);
     }
 
+    const fetchCompanyName = function (id) {
+        const reqUrl = url + '/getRecruiters/' + id;
+        return axios.get(reqUrl);
+    }
+
     useEffect(() =>  {
         startFetch();
         const reqUrl = url + '/userInfo/' + currentUser.uid;
-        console.log(role)
         axios.get(reqUrl, {
             params: {
                 role: role
@@ -44,7 +49,29 @@ export default function UserInfo () {
         })
              .then((res) => {
                 var respData = res.data;
-                setDetails(respData);
+                if(respData.sts === "failure"){
+                    throw "Failed to Load Data"
+                }
+                else{
+                    setDetails(respData.data);
+                    if(role === "Student"){
+                        if(respData.data.placedAt !== null){
+                            return fetchCompanyName(respData.data.placedAt);
+                        }
+                    }
+                    return true;
+                }
+             })
+             .then((res) => {
+                if(res !== true){
+                    var respData = res.data;
+                    if(respData.sts === "failure"){
+                        throw "Failed to load data";
+                    }
+                    else{
+                        setPlacedCompany(respData.data.name);
+                    }
+                }
                 setLoading(false);
              })
              .catch((err) => {
@@ -69,7 +96,7 @@ export default function UserInfo () {
                     details.placedAt !== null
                     &&
                     <center>
-                    <TextAnim primaryText="Congratulations" secondaryText={`You are placed at ${details.placedAt}`}/>
+                    <TextAnim primaryText="Congratulations" secondaryText={`You are placed at ${placedCompany}`}/>
                     </center>
 
                 }

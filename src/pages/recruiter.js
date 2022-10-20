@@ -25,7 +25,7 @@ export default function Recruiter(){
 
     const setHiringStatusIcon = function (arr){
         for(var i = 0; i < arr.length; i++){
-            if(arr[i].hiringStatus == 0){
+            if(arr[i].hiringStatus === 1){
                 arr[i]['hiringIcon'] = <span>
                     <FontAwesomeIcon icon={faClock} className="me-2" style={{color: "orange"}}/>
                     Pending

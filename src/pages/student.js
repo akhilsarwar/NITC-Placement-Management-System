@@ -21,6 +21,17 @@ export default function Student(){
         setError();
     }
 
+    const setPlacementStatus = function (arr) {
+        for(var i = 0; i < arr.length; i++){
+            if(arr[i].placedAt !== null){
+                arr[i]['placementStatus'] = <span style={{color: "green"}}><b>Placed</b></span>
+            }
+            else{
+                arr[i]['placementStatus'] = <span style={{color: "orange"}}><b>Not Placed</b></span>
+            }
+        }
+    }
+
     useEffect(()=>{
         startFetch();
         const reqUrl = url + '/getStudents';
@@ -33,6 +44,7 @@ export default function Student(){
                     setError('Failed to Load')
                 }
                 else{
+                    setPlacementStatus(respData.data);
                     setRecArray(respData.data); 
                 }
                 setLoading(false);
@@ -67,7 +79,7 @@ export default function Student(){
         }
           
         {!loading && recArray.length > 0 && 
-        <TableView tableHeads={["Name", "Roll No", "Branch", "Stream", "Action"]} tableData={recArray} displayFields={["name", "rollNo", "branch", "stream"]} dataViewLink='/viewStudent' idField="uid"/>
+        <TableView tableHeads={["Name", "Roll No", "Stream", "Status", "Action"]} tableData={recArray} displayFields={["name", "rollNo","stream", "placementStatus"]} dataViewLink='/viewStudent' idField="uid"/>
         }
 
         {!loading && recArray.length == 0 && 
