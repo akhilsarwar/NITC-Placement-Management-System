@@ -317,13 +317,14 @@ app.patch('/updatePlacedAt/:id', (req, res) =>{
 
 app.get('/getPlacementStatus/:id', (req, res) => {
     const id = req.params.id;
-    conn.query('SELECT placedAT from Student WHERE uid = ?', [id], (err, result) => {
+    conn.query('SELECT placedAt from Student WHERE uid = ?', [id], (err, result) => {
         if(err){
             console.log(err);
             res.send({"sts": "failure"});
         }
         else{
-            res.send({"sts": "success", data: result[0] === null ? false: true});
+            var sts = result[0].placedAt === null ? false: true
+            res.send({"sts": "success", data: sts});
         }
     })
 })

@@ -31,6 +31,17 @@ export default function ViewStudent(){
     const sid = location.state.id;
 
 
+    const filterRecruiter = function (arr){
+        let newarr = [];
+        for(var i = 0; i< arr.length; i++){
+            if(arr[i].hiringStatus === 1){
+                newarr.push(arr[i]);
+            }
+        }
+        return newarr
+    }
+
+
     const handleClose = () => setShow(false);
     const handleShow = () => {
         setModalLoading(true)
@@ -42,6 +53,7 @@ export default function ViewStudent(){
                 setModalError('Failed to Load')
             }
             else{
+                respData.data = filterRecruiter(respData.data);
                 setAppliedRec(respData.data);
             }
             setModalLoading(false)
