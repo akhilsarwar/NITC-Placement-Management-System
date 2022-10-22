@@ -6,7 +6,8 @@ import '../styles/recruiter.css'
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
 import TableView from "../components/tableView";
-import LoaderAnim from "../components/loadingAnim";
+import Lottie from 'lottie-react';
+import loader from '../assets/97952-loading-animation-blue.json';
 
 export default function Student(){
     const [loading, setLoading] = useState(true);
@@ -75,7 +76,7 @@ export default function Student(){
         {
             loading
             &&
-            <LoaderAnim/>
+            <Lottie animationData={loader} loop={true} className="loaderAnimation"></Lottie>
         }
           
         {!loading && recArray.length > 0 && 

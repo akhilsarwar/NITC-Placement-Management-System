@@ -3,12 +3,13 @@ import { useAuth } from "../context/AuthContext";
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
-import LoaderAnim from "../components/loadingAnim";
+
 import { getDateString } from "../utilFunc";
 import { Modal, Button } from "react-bootstrap";
 import { Alert } from "react-bootstrap";
 import TextAnim from "../components/textAnim.js";
-
+import Lottie from 'lottie-react';
+import loader from '../assets/97952-loading-animation-blue.json';
 
 export default function ViewStudent(){
 
@@ -176,7 +177,7 @@ export default function ViewStudent(){
         
         <div className="safeArea text-center">
 
-            { loading && <LoaderAnim/>}
+            { loading && <Lottie animationData={loader} loop={true} className="loaderAnimation"></Lottie>}
             {
                 !loading
                 &&
@@ -232,7 +233,7 @@ export default function ViewStudent(){
                         <Modal.Title>Change Placement Status</Modal.Title>
                         </Modal.Header>
                         <Modal.Body>
-                        {modalLoading && <LoaderAnim/>}
+                        {modalLoading && <Lottie animationData={loader} loop={true} className="loaderAnimation"></Lottie>}
                         {
                             !modalLoading 
                             &&

@@ -100,3 +100,8 @@ body {
     text-decoration: none;
     text-align: center;
   }
+
+
+  .loaderAnimation{
+    height: 20vh;
+  }

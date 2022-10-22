@@ -3,7 +3,8 @@ import { useAuth } from "../context/AuthContext";
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
-import LoaderAnim from "../components/loadingAnim";
+import Lottie from 'lottie-react';
+import loader from '../assets/97952-loading-animation-blue.json';
 import { getDateString, getTimeString } from "../utilFunc";
 import TextAnim from "../components/textAnim";
 import ConfirmationDialog from "../components/confirmationDialog";
@@ -192,7 +193,7 @@ export default function ViewRecruiter(){
         
         <div className="safeArea text-center">
 
-            { loading && <LoaderAnim/>}
+            { loading && <Lottie animationData={loader} loop={true} className="loaderAnimation"></Lottie>}
             {
                 !loading
                 &&

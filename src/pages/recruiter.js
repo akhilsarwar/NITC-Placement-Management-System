@@ -6,7 +6,8 @@ import '../styles/recruiter.css'
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
 import TableView from "../components/tableView";
-import LoaderAnim from "../components/loadingAnim";
+import Lottie from 'lottie-react';
+import loader from '../assets/97952-loading-animation-blue.json';
 
 export default function Recruiter(){
 
@@ -122,7 +123,8 @@ export default function Recruiter(){
         {
             loading
             &&
-            <LoaderAnim/>
+            // <LoaderAnim/>
+            <Lottie animationData={loader} loop={true} className="loaderAnimation"></Lottie>
         }
 
         {!loading && recArray.length > 0 && 
@@ -139,11 +141,15 @@ export default function Recruiter(){
             role=="Student"
             &&
             <>
-                <h2 style={{marginTop: "100px"}} className="mb-4">Applied</h2>
+                
                 {
                     !loading && appliedRec.length > 0
                     &&
-                    <TableView tableHeads={["Company", "Job Role", "CTC", "Job Location", "Hiring Status", "Action"]} tableData={appliedRec} displayFields={["name", "jobRole", "ctc", "jobLocation", "hiringIcon"]} dataViewLink='/viewRecruiter' idField="id" />
+                    <>
+                        <h2 style={{marginTop: "100px"}} className="mb-4">Applied</h2>
+                        <TableView tableHeads={["Company", "Job Role", "CTC", "Job Location", "Hiring Status", "Action"]} tableData={appliedRec} displayFields={["name", "jobRole", "ctc", "jobLocation", "hiringIcon"]} dataViewLink='/viewRecruiter' idField="id" />
+                    </>
+                    
                 }
                 {!loading && appliedRec.length == 0 && 
                     <center>

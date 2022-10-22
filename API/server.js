@@ -56,7 +56,6 @@ app.get('/userInfo/:id', (req, res) => {
     let query = "";
     if(role === "Student"){
         query = `SELECT * FROM Student WHERE uid='${id}'`;
-        
     }
     else{
         query = `SELECT * FROM PC WHERE uid = '${id}'`;

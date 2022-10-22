@@ -5,7 +5,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import LoaderAnim from "../components/loadingAnim";
+import Lottie from 'lottie-react';
+import loader from '../assets/97952-loading-animation-blue.json';
 import { getDateString } from "../utilFunc";
 import TextAnim from "../components/textAnim.js";
 
@@ -83,7 +84,7 @@ export default function UserInfo () {
 
     return (
         <>
-            {loading && <LoaderAnim/>}
+            {loading && <Lottie animationData={loader} loop={true} className="loaderAnimation"></Lottie>}
             {error && <center><h1>{error}</h1></center>}
             {!loading
                 &&
