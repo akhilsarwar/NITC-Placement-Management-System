@@ -1,19 +1,17 @@
 //TODO: sending custom http error messages for error cases for each request
-
-
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-
+const fileupload = require("express-fileupload");
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cors());
 app.use(express.json());
+app.use(fileupload());
 
 var mysql = require('mysql');
 const fs = require('fs');
-const { resolveSoa } = require('dns');
 
 
 var conn = mysql.createConnection({
@@ -78,13 +76,16 @@ app.post('/updateUserProfile/:id', (req, res)=> {
     const data = req.body;
     const id = req.params.id; 
     const role = data.role;
+    console.log(data)
     if(role === "Student"){
+        
         conn.query(`SELECT uid FROM Student WHERE uid=?`, [id], (err, result) => {
             if(err){
                 console.log(err);
                 res.send({"sts" : "failure"});
             }
             if(result.length > 0){
+                
                 //update the profile
                 conn.query(`UPDATE Student SET name=?, rollNo=?, email=?, cgpa=?, address=?, contact=?, stream=?, branch=?, dob=?, placedAt=? WHERE uid=?`, [data.name, data.rollNo, data.email, data.cgpa, data.address, data.contact, data.stream, data.branch, data.dob, data.placedAt, id], (err, result) =>{
                     if(err){
@@ -93,8 +94,34 @@ app.post('/updateUserProfile/:id', (req, res)=> {
                         res.send({"sts" : "failure"});
                     }
                     else{
-                        console.log('Profile Updation [Change existing] Success');
-                        res.send({"sts" : "success"});
+                        console.log('here')
+                        const resumeFile = req.files.resume;
+                        console.log(req.files)
+                        if(resumeFile !== null){
+                            conn.query(`DELETE FROM Resume WHERE sid=?`, [id], (err, result) => {
+                                if(err){
+                                    console.log(err);
+                                    res.send({"sts" : "failure"});
+                                }
+                                else{
+                                    conn.query(`INSERT INTO Resume (sid, name, data, size, encoding, mimetype) values (?, ?, ?, ?, ?, ?)`, [id, resumeFile.name, resumeFile.data, resumeFile.size, resumeFile.encoding, resumeFile.mimetype], (err, result) => {
+                                        if(err){
+                                            console.log(err);
+                                            res.send({"sts": "failure"});
+                                        }
+                                        else{
+                                            console.log('Profile Updation [Change existing] Success');
+                                            res.send({"sts" : "success"});
+                                        }
+                                    })
+                                }
+                            })
+                            
+                        }
+                        else{
+                            console.log('Profile Updation [Change existing] Success');
+                            res.send({"sts" : "success"});
+                        }
                     }
                 })
             }
@@ -107,8 +134,18 @@ app.post('/updateUserProfile/:id', (req, res)=> {
                         res.send({"sts" : "failure"});
                     }
                     else{
-                        console.log('Profile Updation [Insertion] Success')
-                        res.send({"sts" : "success"});
+                        //add resume to the resume table
+                        const resumeFile = req.files.resume;
+                        conn.query(`INSERT INTO Resume (sid, name, data, size, encoding, mimetype) values (?, ?, ?, ?, ?, ?)`, [id, resumeFile.name, resumeFile.data, resumeFile.size, resumeFile.encoding, resumeFile.mimetype], (err, result) => {
+                            if(err){
+                                console.log(err);
+                                res.send({"sts" : "failure"});
+                            }
+                            else{
+                                console.log('Profile Updation [Insertion] Success')
+                                res.send({"sts" : "success"});        
+                            }
+                        })
                     }
                 });
             }
@@ -349,6 +386,27 @@ app.patch('/changeHiringStatus/:id', (req, res) => {
                     res.send({"sts": "success"});
                 }       
             });
+        }
+    })
+})
+
+
+app.get('/getResume/:id', (req, res) => {
+    const sid = req.params.id;
+    conn.query('SELECT * FROM Resume WHERE sid = ?', [sid], (err, result) => {
+        if(err){
+            console.log(err);
+            res.send({"sts": "failure"});
+        }
+        else{   
+            // console.log(result[0])
+            if(result.length > 0){
+                var buff = new Buffer.from(result[0].data)
+                res.send({"sts": "success", "data": buff});
+            }
+            else{
+                res.send({"sts" : "success", "data" : null});
+            }
         }
     })
 })

@@ -9,6 +9,8 @@ import Lottie from 'lottie-react';
 import loader from '../assets/97952-loading-animation-blue.json';
 import { getDateString } from "../utilFunc";
 import TextAnim from "../components/textAnim.js";
+import { Modal, Button } from "react-bootstrap";
+
 
 export default function UserInfo () {
 
@@ -18,6 +20,16 @@ export default function UserInfo () {
     const url = process.env.REACT_APP_BACKEND_URL;
     const { currentUser, role } = useAuth();
     const [placedCompany, setPlacedCompany] = useState(null);
+    const [resumeLoading, setResumeLoading] = useState(true);
+    const [resumeError, setResumeError] = useState();
+    const [resumeURL, setResumeURL] = useState();
+    const [show, setShow] = useState(false);
+
+
+    const handleClose = () => setShow(false);
+    const handleShow = (event) => {
+        setShow(true)
+    };
     
     const navigate = useNavigate();
 
@@ -35,10 +47,44 @@ export default function UserInfo () {
         setLoading(false);
     }
 
+
     const fetchCompanyName = function (id) {
         const reqUrl = url + '/getRecruiters/' + id;
         return axios.get(reqUrl);
     }
+
+
+
+    const fetchResume = function (id) {
+        const reqUrl = url + '/getResume/' + id;
+        setResumeLoading(true);
+        setResumeError();
+        axios.get(reqUrl)
+        .then(res => {
+            var respData = res.data;
+            if(respData.sts === "failure"){
+                throw "File not received"
+            }
+            else{
+                if(respData.data !== null){
+                    const arr = new Uint8Array(respData.data.data);
+                    const blob = new Blob([arr], { type: 'application/pdf' });
+                    const resURL = URL.createObjectURL(blob);
+                    setResumeURL(resURL);
+                }
+                else{
+                    setResumeError('No Resume Found');
+                }
+                // window.open(resURL);
+            }
+            setResumeLoading(false);
+        }).catch((err) => {
+            setResumeLoading(false);
+            setResumeError('Resume Load Failed');
+        });
+    }
+
+
 
     useEffect(() =>  {
         startFetch();
@@ -48,39 +94,41 @@ export default function UserInfo () {
                 role: role
             }
         })
-             .then((res) => {
+        .then((res) => {
+            var respData = res.data;
+            if(respData.sts === "failure"){
+                throw "Failed to Load Data"
+            }
+            else{
+                setDetails(respData.data);
+                if(role === "Student"){
+                    if(respData.data.placedAt !== null){
+                        return fetchCompanyName(respData.data.placedAt);
+                    }
+                }
+                return true;
+            }
+        })
+        .then((res) => {
+            if(res !== true){
                 var respData = res.data;
                 if(respData.sts === "failure"){
-                    throw "Failed to Load Data"
+                    throw "Failed to load data";
                 }
                 else{
-                    setDetails(respData.data);
-                    if(role === "Student"){
-                        if(respData.data.placedAt !== null){
-                            return fetchCompanyName(respData.data.placedAt);
-                        }
-                    }
-                    return true;
+                    setPlacedCompany(respData.data.name);
                 }
-             })
-             .then((res) => {
-                if(res !== true){
-                    var respData = res.data;
-                    if(respData.sts === "failure"){
-                        throw "Failed to load data";
-                    }
-                    else{
-                        setPlacedCompany(respData.data.name);
-                    }
-                }
-                setLoading(false);
-             })
-             .catch((err) => {
-                setLoading(false);
-                setError('Failed to Load')
-                console.log(err);
-             });
+            }
+            setLoading(false);
+        })
+        .catch((err) => {
+            setLoading(false);
+            setError('Failed to Load')
+            console.log(err);
+        });
     }, []);
+
+
 
     return (
         <>
@@ -137,7 +185,7 @@ export default function UserInfo () {
                     <br/>
                     <h4>POST</h4>
                     <p>{ details.post }</p>
-                    <br/><br/>
+                    <br/>
                     </>
                     
                 }
@@ -157,7 +205,7 @@ export default function UserInfo () {
                     role==="Student" 
                     &&
                     <>
-                    <button type="button" className="btn btn-secondary btn-lg">Download Resume</button>
+                    <button type="button" className="btn btn-secondary btn-lg" onClick={()=> {handleShow(); fetchResume(currentUser.uid)}}>Download Resume</button>
                     <br />
                     <br />
                     </>
@@ -170,7 +218,46 @@ export default function UserInfo () {
             </div>
 
             }
+
+
+
+            <Modal show={show} onHide={handleClose} dialogClassName="modal-width">
+                <Modal.Header closeButton>
+                <Modal.Title>CV</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    {/* <Document file={cvNow}>
+                <Page pageNumber={1} />
+            </Document> */}
+            {
+                !resumeLoading 
+                &&
+                resumeError === undefined
+                &&
+                <object width="100%" height="600px" data={resumeURL} type="application/pdf">   </object>
+            }
+            {
+                !resumeLoading 
+                &&
+                resumeError !== undefined
+                &&
+                <center>
+                    {resumeError}
+                </center>
+            }
+            {
+                resumeLoading
+                &&
+                <Lottie animationData={loader} loop={true} className="loaderAnimation"></Lottie>
+            }
             
+            </Modal.Body>
+                <Modal.Footer>
+                <Button variant="secondary" onClick={handleClose}>
+                    Close
+                </Button>
+                </Modal.Footer>
+            </Modal>            
         </>
         
         

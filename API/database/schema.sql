@@ -27,6 +27,17 @@ create table Student(
     foreign key(placedAt) references Recruiter(id)
 );
 
+create table Resume (
+	sid varchar(100),
+    name varchar(200),
+	data longblob,
+    size bigint,
+    encoding text,
+    mimetype text,
+    foreign key (sid) references Student (uid),
+    primary key (sid)
+);
+
 create table PC(
     uid varchar(100),           
     name varchar(100) NOT NULL,

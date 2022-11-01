@@ -141,12 +141,15 @@ export default function Recruiter(){
             role=="Student"
             &&
             <>
-                
+                {!loading &&
+
+                    <h2 style={{marginTop: "100px"}} className="mb-4">Applied</h2>
+                }
                 {
                     !loading && appliedRec.length > 0
                     &&
                     <>
-                        <h2 style={{marginTop: "100px"}} className="mb-4">Applied</h2>
+                        
                         <TableView tableHeads={["Company", "Job Role", "CTC", "Job Location", "Hiring Status", "Action"]} tableData={appliedRec} displayFields={["name", "jobRole", "ctc", "jobLocation", "hiringIcon"]} dataViewLink='/viewRecruiter' idField="id" />
                     </>
                     

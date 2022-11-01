@@ -55,20 +55,25 @@ export default function UpdateProfile(){
         event.preventDefault();
         const url = process.env.REACT_APP_BACKEND_URL +  '/updateUserProfile/' + currentUser.uid;
         startFetch();
-        axios.post(url, {
-            'name': name.current ? name.current.value: null,
-            'rollNo' : rollNo.current ? rollNo.current.value: null,
-            'email': email.current ? email.current.value: null,
-            'branch' : branch.current ? branch.current.value: null,
-            'stream' : stream.current ? stream.current.value: null,
-            'address' : address.current ? address.current.value: null,
-            'contact' : contact.current ? contact.current.value: null,
-            'resume' : resume.current ? resume.current.value: null,
-            'dob' : dob.current ? dob.current.value: null,
-            'cgpa': cgpa.current ? cgpa.current.value: null,
-            'post': post.current ? post.current.value: null,
-            'department': department.current ? department.current.value: null,
-            'role': role
+        const formData = new FormData();
+        formData.append('name', name.current ? name.current.value: null);
+        formData.append('rollNo' , rollNo.current ? rollNo.current.value: null);
+        formData.append('email', email.current ? email.current.value: null);
+        formData.append('branch' , branch.current ? branch.current.value: null);
+        formData.append('stream' , stream.current ? stream.current.value: null);
+        formData.append('address' , address.current ? address.current.value: null);
+        formData.append('contact' , contact.current ? contact.current.value: null);
+        formData.append('resume', resume.current.files.length ? resume.current.files[0]: null, 'resume');
+        formData.append('dob' , dob.current ? dob.current.value: null);
+        formData.append('cgpa', cgpa.current ? cgpa.current.value: null);
+        formData.append('post', post.current ? post.current.value: null);
+        formData.append('department', department.current ? department.current.value: null);
+        formData.append('role',  role);
+
+        axios.post(url, formData, {
+            headers: {
+                "Content-Type": "multipart/form-data"
+            }            
         }).then((result) => {
             const respData = result.data;
             if(respData.sts === "failure"){
