@@ -214,13 +214,21 @@ app.get('/getRecruiters/:id?', (req, res) => {
     const role = req.query.role;
     const sid = req.query.uid;
 
+
+    const filterString = req.query.filterString;
+    const filterOn = req.query.filterOn ? JSON.parse(req.query.filterOn): undefined;
+
+
     var query = "";
     if(rid === undefined){
-        query = `SELECT * FROM Recruiter`;
+        query = `SELECT * FROM Recruiter WHERE `;
         if(role === "Student"){
-            
-            query = `SELECT * FROM Recruiter R WHERE R.minCgpaRequired <= (SELECT cgpa FROM Student S WHERE S.uid = '${sid}')`;
+            query = `SELECT * FROM Recruiter R WHERE R.minCgpaRequired <= (SELECT cgpa FROM Student S WHERE S.uid = '${sid}') AND `;
         }
+        for(var i = 0; i < filterOn.length - 1; i++){
+            query += filterOn[i] + " LIKE '%" + filterString + "%' OR "; 
+        }
+        query += filterOn[filterOn.length - 1] + " LIKE '%" + filterString + "%'";
     }
     else{
         query = `SELECT * FROM Recruiter WHERE id='${rid}'`;
@@ -260,9 +268,16 @@ app.delete('/deleteRecruiter/:id?', (req, res)=>{
 
 app.get('/getStudents/:id?', (req, res) => {
     const sid = req.params.id;
+    const filterString = req.query.filterString;
+    const filterOn = req.query.filterOn ? JSON.parse(req.query.filterOn): undefined;
+
     var query = "";
     if(sid === undefined){
-        query = `SELECT * FROM Student`;
+        query = `SELECT * FROM Student WHERE `;
+        for(var i = 0; i < filterOn.length - 1; i++){
+            query += filterOn[i] + " LIKE '%" + filterString + "%' OR "; 
+        }
+        query += filterOn[filterOn.length - 1] + " LIKE '%" + filterString + "%'";
     }
     else{
         query = `SELECT * FROM Student WHERE uid='${sid}'`;

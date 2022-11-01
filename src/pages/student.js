@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -13,6 +13,7 @@ export default function Student(){
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState();
     const [recArray, setRecArray] = useState();
+    const searchRef = useRef();
     const url = process.env.REACT_APP_BACKEND_URL;
     const { currentUser, role } = useAuth();
     const navigate = useNavigate();
@@ -33,9 +34,11 @@ export default function Student(){
         }
     }
 
-    useEffect(()=>{
+    const fetchStudents = function (filterString) {
         startFetch();
-        const reqUrl = url + '/getStudents';
+        let reqUrl = url + '/getStudents';
+        reqUrl += `?filterString=${filterString}`;
+        reqUrl += `&filterOn=${JSON.stringify(['name', 'rollNo', 'stream'])}`;
         
         axios.get(reqUrl, {})
              .then((res) => {
@@ -56,6 +59,10 @@ export default function Student(){
                 setError('Failed to Load')
                 console.log(err);
              })
+    }
+
+    useEffect(()=>{
+        fetchStudents('');
     }, []);
 
 
@@ -65,10 +72,12 @@ export default function Student(){
 
         <div className="input-group mb-4 searchBar">
             <div className="form-floating">
-              <input type="search" id="searchField" className="form-control" placeholder="Search"/>
+              <input type="search" id="searchField" className="form-control" placeholder="Search" ref={searchRef}/>
               <label className="form-label" htmlFor="searchField">Search</label>
             </div>
-            <button type="button" className="btn btn-primary search" style={{height: "58px"}}>
+            <button type="button" className="btn btn-primary search" style={{height: "58px"}} onClick={()=> {
+                fetchStudents(searchRef.current.value);
+            }}>
             <FontAwesomeIcon icon={faSearch} />
             </button>
           </div>

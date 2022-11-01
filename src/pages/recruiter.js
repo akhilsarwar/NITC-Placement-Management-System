@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { faCheck, faClock, faSearch } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -18,6 +18,7 @@ export default function Recruiter(){
     const url = process.env.REACT_APP_BACKEND_URL;
     const { currentUser, role } = useAuth();
     const navigate = useNavigate();
+    const searchRef = useRef();
 
     const startFetch = function(){
         setLoading(true);
@@ -49,13 +50,16 @@ export default function Recruiter(){
             }
         });
     }
-    
-    useEffect(()=>{
+
+
+    //fetching recruiters filtered for columns - Company, Job Role, Job Location
+    const fetchRecruiters = function (filterString) {
         startFetch();
-        
         let reqUrl = url + '/getRecruiters';
         reqUrl += `?role=${role}`
         reqUrl += `&uid=${currentUser.uid}`
+        reqUrl += `&filterString=${filterString}`
+        reqUrl += `&filterOn=${JSON.stringify(['name', 'jobRole', 'jobLocation'])}`
         
         axios.get(reqUrl, {})
              .then((res) => {
@@ -93,6 +97,12 @@ export default function Recruiter(){
                 setError('Failed to Load')
                 console.log(err);
              })
+    }
+
+
+    
+    useEffect(()=>{
+        fetchRecruiters('');
     }, []);
 
 
@@ -103,10 +113,12 @@ export default function Recruiter(){
 
         <div className="input-group mb-4 searchBar">
             <div className="form-floating">
-              <input type="search" id="searchField" className="form-control" placeholder="Search"/>
+              <input type="search" id="searchField" className="form-control" placeholder="Search" ref={searchRef}/>
               <label className="form-label" htmlFor="searchField">Search</label>
             </div>
-            <button type="button" className="btn btn-primary search" style={{height: "58px"}}>
+            <button type="button" className="btn btn-primary search" style={{height: "58px"}} onClick={() => {
+                fetchRecruiters(searchRef.current.value);
+            }}>
             <FontAwesomeIcon icon={faSearch} />
             </button>
           </div>
