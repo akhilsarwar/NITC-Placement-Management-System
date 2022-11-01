@@ -55,7 +55,7 @@ export default function ResetPassword () {
                 <p>Not a member? <Link to='/signup'>Sign Up</Link></p>
             </div>
             <div className="text-center">
-            <p>Already a member ? <Link to='/signup'>Login</Link></p>
+            <p>Already a member ? <Link to='/login'>Login</Link></p>
             </div>
         </form> 
         </div>    
