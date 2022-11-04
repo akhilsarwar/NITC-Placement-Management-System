@@ -5,11 +5,15 @@ import axios from "axios";
 import { useAuth } from '../context/AuthContext.js';
 import { useLocation, useNavigate } from "react-router-dom";
 import { Alert } from "react-bootstrap";
-import '../styles/updateProfile.css';
+import '../styles/avatar.css';
 import { getDateString } from "../utilFunc.js";
+import { faCircleUser, faArrowCircleUp } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 export default function UpdateProfile(){
 
+    const profileImage = useRef();
+    const profileImageView = useRef();
     const name = useRef();
     const email = useRef();
     const rollNo = useRef();
@@ -26,6 +30,7 @@ export default function UpdateProfile(){
     const navigate = useNavigate();
 
     const location = useLocation();
+    const profileImage_ = location.state.image;
     const name_  = location.state.name
     const email_  = location.state.email
     const rollNo_  = location.state.rollNo
@@ -44,6 +49,8 @@ export default function UpdateProfile(){
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState();
     const [msg, setMsg] = useState();
+    const [profileImageUrl, setProfileImageUrl] = useState('');
+    const [userIconAvatarView, setUserIconAvatarView] = useState(false);
 
     const startFetch = function(){
         setLoading(true);
@@ -63,7 +70,9 @@ export default function UpdateProfile(){
         formData.append('stream' , stream.current ? stream.current.value: null);
         formData.append('address' , address.current ? address.current.value: null);
         formData.append('contact' , contact.current ? contact.current.value: null);
-        formData.append('resume', resume.current.files.length ? resume.current.files[0]: null, 'resume');
+        if(role === "Student")
+            formData.append('resume', resume.current.files.length ? resume.current.files[0]: null, 'resume');
+        formData.append('profileImage', profileImage.current.files.length ? profileImage.current.files[0]: null, 'profileImage');
         formData.append('dob' , dob.current ? dob.current.value: null);
         formData.append('cgpa', cgpa.current ? cgpa.current.value: null);
         formData.append('post', post.current ? post.current.value: null);
@@ -98,6 +107,33 @@ export default function UpdateProfile(){
         <div className="safeArea" >
         <h1 className="mb-4">Update Profile Info</h1>
         <form onSubmit={(e)=>{handleSubmit(e);}}>
+
+            <div className="avatar-wrapper mb-3">
+                <input className="file-upload" type="file" accept="image/*" ref={profileImage} defaultValue= {profileImage_} onChange={(e) => {
+                    if(e.target.files.length !== 0){
+                        console.log(e.target.files)
+                        var file = e.target.files[0];
+                        var fr = new FileReader();
+                        fr.onload = () => {
+                            setProfileImageUrl(fr.result)
+                            setUserIconAvatarView(true);
+                        }
+                        fr.readAsDataURL(file);    
+                    }
+                    
+                }} required/> 
+                <div className="upload-button" onClick={()=> {
+                    profileImage.current.click();
+                }}>
+                    <FontAwesomeIcon icon={faCircleUser} className="circular-user" hidden={userIconAvatarView}/>
+                    <FontAwesomeIcon icon={faArrowCircleUp} className="arrow-circle-up-icon"/>
+                    <img src={profileImageUrl} alt="No image" ref={profileImageView} hidden={!userIconAvatarView}/>    
+                </div>
+                
+            </div>
+
+            
+
             <div className="mb-3">
               <label htmlFor="nameUpdate" className="form-label">Name</label>
               <input type="text" className="form-control" id="nameUpdate" aria-describedby="nameHelp" ref={name} defaultValue= {name_} required/>
@@ -131,7 +167,7 @@ export default function UpdateProfile(){
 
                     <div className="mb-3">
                         <label className="form-label" htmlFor="resumeUpdate">Upload Resume</label>
-                        <input type="file" className="form-control" id="resumeUpdate" ref={resume} defaultValue= {resume_} required/>
+                        <input type="file" className="form-control" id="resumeUpdate" ref={resume} defaultValue= {resume_} accept="application/pdf" required/>
                     </div>
                 </>
                 

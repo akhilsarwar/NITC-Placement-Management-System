@@ -38,6 +38,16 @@ create table Resume (
     primary key (sid)
 );
 
+create table ProfileImage (
+	sid varchar(100),
+    name varchar(200),
+	data longblob,
+    size bigint,
+    encoding text,
+    mimetype text,
+    primary key (sid)
+);
+
 create table PC(
     uid varchar(100),           
     name varchar(100) NOT NULL,

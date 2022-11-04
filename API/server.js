@@ -3,6 +3,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const fileupload = require("express-fileupload");
+const kill = require('kill-port')
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -12,6 +13,7 @@ app.use(fileupload());
 
 var mysql = require('mysql');
 const fs = require('fs');
+const killPort = require('kill-port');
 
 
 var conn = mysql.createConnection({
@@ -32,10 +34,17 @@ conn.connect((err)=>{
         console.log('Connected to database')
 })
 
-
-app.listen(3001, ()=>{
-    console.log('Server listening on 3001');
+kill(3001).then(() => {
+    app.listen(3001, ()=>{
+        console.log('Server listening on 3001');
+    })
 })
+.catch(() => {
+    app.listen(3001, ()=>{
+        console.log('Server listening on 3001');
+    })
+})
+
 
 app.get('/studentDetails/:id', (req, res) => {
     const id = req.params.id;
@@ -77,117 +86,315 @@ app.post('/updateUserProfile/:id', (req, res)=> {
     const id = req.params.id; 
     const role = data.role;
     console.log(data)
+    console.log(req.files)
+
+
     if(role === "Student"){
-        
-        conn.query(`SELECT uid FROM Student WHERE uid=?`, [id], (err, result) => {
-            if(err){
+
+        conn.beginTransaction(function (err) {
+            if(err) {
                 console.log(err);
                 res.send({"sts" : "failure"});
             }
-            if(result.length > 0){
-                
-                //update the profile
-                conn.query(`UPDATE Student SET name=?, rollNo=?, email=?, cgpa=?, address=?, contact=?, stream=?, branch=?, dob=?, placedAt=? WHERE uid=?`, [data.name, data.rollNo, data.email, data.cgpa, data.address, data.contact, data.stream, data.branch, data.dob, data.placedAt, id], (err, result) =>{
-                    if(err){
-                        console.log('Profile Updation [Change existing] Failure');
-                        console.log(err);
-                        res.send({"sts" : "failure"});
-                    }
-                    else{
-                        console.log('here')
-                        const resumeFile = req.files.resume;
-                        console.log(req.files)
-                        if(resumeFile !== null){
-                            conn.query(`DELETE FROM Resume WHERE sid=?`, [id], (err, result) => {
-                                if(err){
-                                    console.log(err);
-                                    res.send({"sts" : "failure"});
-                                }
-                                else{
-                                    conn.query(`INSERT INTO Resume (sid, name, data, size, encoding, mimetype) values (?, ?, ?, ?, ?, ?)`, [id, resumeFile.name, resumeFile.data, resumeFile.size, resumeFile.encoding, resumeFile.mimetype], (err, result) => {
-                                        if(err){
-                                            console.log(err);
-                                            res.send({"sts": "failure"});
-                                        }
-                                        else{
-                                            console.log('Profile Updation [Change existing] Success');
-                                            res.send({"sts" : "success"});
-                                        }
-                                    })
-                                }
+
+            conn.query(`SELECT uid FROM Student WHERE uid=?`, [id], (err, result) => {
+                if(err){
+                    console.log(err);
+                    res.send({"sts" : "failure"});
+                    return conn.rollback(function () {
+                        console.log('Rolling Back the transaction');
+                    })
+                }
+                if(result.length > 0){
+                    
+                    //update the profile
+                    conn.query(`UPDATE Student SET name=?, rollNo=?, email=?, cgpa=?, address=?, contact=?, stream=?, branch=?, dob=?, placedAt=? WHERE uid=?`, [data.name, data.rollNo, data.email, data.cgpa, data.address, data.contact, data.stream, data.branch, data.dob, data.placedAt, id], (err, result) =>{
+                        if(err){
+            
+                            console.log(err);
+                            res.send({"sts" : "failure"});
+                            return conn.rollback(function () {
+                                console.log('Rolling Back the transaction');
                             })
-                            
+
                         }
                         else{
-                            console.log('Profile Updation [Change existing] Success');
-                            res.send({"sts" : "success"});
-                        }
-                    }
-                })
-            }
-            else{
-                //insert a new profile
-                conn.query(`INSERT INTO Student (uid, name, rollNo, email, cgpa, address, contact, stream, branch, dob, placedAt) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,?)`, [id, data.name, data.rollNo, data.email, data.cgpa, data.address, data.contact, data.stream, data.branch, data.dob, data.placedAt], (err, result)=>{
-                    if(err){
-                        console.log('Profile Updation [Insertion] Failed');
-                        console.log(err);
-                        res.send({"sts" : "failure"});
-                    }
-                    else{
-                        //add resume to the resume table
-                        const resumeFile = req.files.resume;
-                        conn.query(`INSERT INTO Resume (sid, name, data, size, encoding, mimetype) values (?, ?, ?, ?, ?, ?)`, [id, resumeFile.name, resumeFile.data, resumeFile.size, resumeFile.encoding, resumeFile.mimetype], (err, result) => {
-                            if(err){
-                                console.log(err);
-                                res.send({"sts" : "failure"});
+                            const resumeFile = req.files.resume;
+                            if(resumeFile !== null){
+                                conn.query(`DELETE FROM Resume WHERE sid=?`, [id], (err, result) => {
+                                    if(err){
+                                        console.log(err);
+                                        res.send({"sts" : "failure"});
+                                        return conn.rollback(function () {
+                                            console.log('Rolling Back the transaction');
+                                        })
+                                    }
+                                    else{
+                                        console.log('Delete Resume Successful')
+                                        conn.query(`INSERT INTO Resume (sid, name, data, size, encoding, mimetype) values (?, ?, ?, ?, ?, ?)`, [id, resumeFile.name, resumeFile.data, resumeFile.size, resumeFile.encoding, resumeFile.mimetype], (err, result) => {
+                                            if(err){
+                                                console.log(err);
+                                                res.send({"sts": "failure"});
+                                                return conn.rollback(function () {
+                                                    console.log('Rolling Back the transaction');
+                                                })
+                                            }
+                                            console.log('Insert Resume Successful')
+                                            const profileImage = req.files.profileImage;
+                                            if(profileImage !== null){
+                                                conn.query(`DELETE FROM ProfileImage WHERE sid=?`, [id], (err, result) => {
+                                                    if(err){
+                                                        console.log(err);
+                                                        res.send({"sts": "failure"});
+                                                        return conn.rollback(function () {
+                                                            console.log('Rolling Back the transaction');
+                                                        })      
+                                                    }
+                                                    console.log('Delete Profile Image Successful')
+                                                    conn.query(`INSERT INTO ProfileImage (sid, name, data, size, encoding, mimetype) values (?, ?, ?, ?, ?, ?)`, [id, profileImage.name, profileImage.data, profileImage.size, profileImage.encoding, profileImage.mimetype], (err, result) => {
+                                                        if(err) {
+                                                            console.log(err);
+                                                            res.send({"sts": "failure"});
+                                                            return conn.rollback(function () {
+                                                                console.log('Rolling Back the transaction');
+                                                            })  
+                                                        }
+                                                        
+                                                        console.log('Insert Profile Image Successful')
+                                                        conn.commit(function(err) {
+                                                            if (err) {
+                                                                console.log(err);
+                                                                res.send({"sts": "failure"});
+                                                                return conn.rollback(function () {
+                                                                    console.log('Rolling Back the transaction');
+                                                                })      
+                                                            }
+                                                            console.log('Profile Updation [Change existing] Success');
+                                                            res.send({"sts" : "success"});                        
+                                                        });
+                                                    
+                                                    })
+                                                })
+                                            }
+
+                                            else{
+                                                conn.commit(function(err) {
+                                                    if (err) {
+                                                        console.log(err);
+                                                        res.send({"sts": "failure"});
+                                                        return conn.rollback(function () {
+                                                            console.log('Rolling Back the transaction');
+                                                        })      
+                                                    }
+                                                    console.log('Profile Updation [Change existing] Success');
+                                                    res.send({"sts" : "success"});                        
+                                                });
+                                            }
+                                            
+                                        })
+                                    }
+                                })
+                                
                             }
                             else{
-                                console.log('Profile Updation [Insertion] Success')
-                                res.send({"sts" : "success"});        
+                                conn.commit(function(err) {
+                                    if (err) {
+                                        console.log(err);
+                                        res.send({"sts": "failure"});
+                                        return conn.rollback(function () {
+                                            console.log('Rolling Back the transaction');
+                                        })      
+                                    }
+                                    console.log('Profile Updation [Change existing] Success');
+                                    res.send({"sts" : "success"});                        
+                                });
                             }
-                        })
-                    }
-                });
-            }
-            
-        });    
+                        }
+                    })
+                }
+                else{
+                    //insert a new profile
+                    conn.query(`INSERT INTO Student (uid, name, rollNo, email, cgpa, address, contact, stream, branch, dob, placedAt) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,?)`, [id, data.name, data.rollNo, data.email, data.cgpa, data.address, data.contact, data.stream, data.branch, data.dob, data.placedAt], (err, result)=>{
+                        if(err) {
+                            console.log(err);
+                            res.send({"sts": "failure"});
+                            return conn.rollback(function () {
+                                console.log('Rolling Back the transaction');
+                            })  
+                        }
+                        else{
+                            console.log('Details Updation Successful')
+
+                            //add resume to the resume table
+                            const resumeFile = req.files.resume;
+
+                            conn.query(`INSERT INTO Resume (sid, name, data, size, encoding, mimetype) values (?, ?, ?, ?, ?, ?)`, [id, resumeFile.name, resumeFile.data, resumeFile.size, resumeFile.encoding, resumeFile.mimetype], (err, result) => {
+                                if(err) {
+                                    console.log(err);
+                                    res.send({"sts": "failure"});
+                                    return conn.rollback(function () {
+                                        console.log('Rolling Back the transaction');
+                                    })  
+                                }
+                                
+                                console.log('Insert Resume Successful')
+                                const profileImage = req.files.profileImage;
+                                conn.query(`INSERT INTO ProfileImage (sid, name, data, size, encoding, mimetype) values (?, ?, ?, ?, ?, ?)`, [id, profileImage.name, profileImage.data, profileImage.size, profileImage.encoding, profileImage.mimetype], (err, result) => {
+                                    if(err) {
+                                        console.log(err);
+                                        res.send({"sts": "failure"});
+                                        return conn.rollback(function () {
+                                            console.log('Rolling Back the transaction');
+                                        })  
+                                    }
+
+                                    console.log('Insert Profile Image Successful')
+                                    conn.commit(function(err) {
+                                        if (err) {
+                                            console.log(err);
+                                            res.send({"sts": "failure"});
+                                            return conn.rollback(function () {
+                                                console.log('Rolling Back the transaction');
+                                            })      
+                                        }
+                                        console.log('Profile Updation [Change existing] Success');
+                                        res.send({"sts" : "success"});                        
+                                    });
+                                })
+                            })
+                        }
+                    });
+                }
+                
+            });        
+        })
+
+        
     }
     else if(role === "Placement Coordinator"){
-        conn.query(`SELECT uid FROM PC WHERE uid=?`, [id], (err, result) => {
-            if(err){
+        console.log('here')
+        conn.beginTransaction(function (err) {
+            if(err) {
                 console.log(err);
                 res.send({"sts" : "failure"});
             }
-            if(result.length > 0){
-                //update the profile
-                conn.query(`UPDATE PC SET name=?, email=?, address=?, contact=?, dob=?, department=?, post=? WHERE uid=?`, [data.name, data.email, data.address, data.contact, data.dob, data.department, data.post, id], (err, result) =>{
-                    if(err){
-                        console.log('Profile Updation [Change existing] Failure');
-                        console.log(err);
-                        res.send({"sts" : "failure"});
-                    }
-                    else{
-                        console.log('Profile Updation [Change existing] Success');
-                        res.send({"sts" : "success"});
-                    }
-                })
-            }
-            else{
-                //insert a new profile
-                conn.query(`INSERT INTO PC (uid, name, email, address, contact, dob, department, post) values (?, ?, ?, ?, ?, ?, ?, ?)`, [id, data.name, data.email, data.address, data.contact, data.dob, data.department, data.post], (err, result)=>{
-                    if(err){
-                        console.log('Profile Updation [Insertion] Failed');
-                        console.log(err);
-                        res.send({"sts" : "failure"});
-                    }
-                    else{
-                        console.log('Profile Updation [Insertion] Success')
-                        res.send({"sts" : "success"});
-                    }
-                });
-            }
-            
-        });
+
+            conn.query(`SELECT uid FROM PC WHERE uid=?`, [id], (err, result) => {
+                if(err){
+                    console.log(err);
+                    res.send({"sts" : "failure"});
+                    return conn.rollback(function () {
+                        console.log('Rolling Back the transaction');
+                    })  
+                }
+                if(result.length > 0){
+                    //update the profile
+                    conn.query(`UPDATE PC SET name=?, email=?, address=?, contact=?, dob=?, department=?, post=? WHERE uid=?`, [data.name, data.email, data.address, data.contact, data.dob, data.department, data.post, id], (err, result) =>{
+                        if(err){
+                            console.log(err);
+                            res.send({"sts" : "failure"});
+                            return conn.rollback(function () {
+                                console.log('Rolling Back the transaction');
+                            })  
+                        }
+
+                        console.log('Details Updation Successful')
+                        const profileImage = req.files.profileImage;
+                        if(profileImage !== null){
+                            conn.query(`DELETE FROM ProfileImage WHERE sid=?`, [id], (err, result) => {
+                                if(err){
+                                    console.log(err);
+                                    res.send({"sts": "failure"});
+                                    return conn.rollback(function () {
+                                        console.log('Rolling Back the transaction');
+                                    })      
+                                }
+
+                                console.log('Delete Profile Image Successful')
+                                conn.query(`INSERT INTO ProfileImage (sid, name, data, size, encoding, mimetype) values (?, ?, ?, ?, ?, ?)`, [id, profileImage.name, profileImage.data, profileImage.size, profileImage.encoding, profileImage.mimetype], (err, result) => {
+                                    if(err) {
+                                        console.log(err);
+                                        res.send({"sts": "failure"});
+                                        return conn.rollback(function () {
+                                            console.log('Rolling Back the transaction');
+                                        })  
+                                    }
+                                    
+                                    console.log('Insert Profile Image Successful')
+                                    conn.commit(function(err) {
+                                        if (err) {
+                                            console.log(err);
+                                            res.send({"sts": "failure"});
+                                            return conn.rollback(function () {
+                                                console.log('Rolling Back the transaction');
+                                            })      
+                                        }
+                                        console.log('Profile Updation [Change existing] Success');
+                                        res.send({"sts" : "success"});                        
+                                    });                 
+                                })
+                            })
+                        }
+
+                        else{
+                            conn.commit(function(err) {
+                                if (err) {
+                                    console.log(err);
+                                    res.send({"sts": "failure"});
+                                    return conn.rollback(function () {
+                                        console.log('Rolling Back the transaction');
+                                    })      
+                                }
+                                console.log('Profile Updation [Change existing] Success');
+                                res.send({"sts" : "success"});                        
+                            });
+                        }
+                        
+                        
+                    })
+                }
+                else{
+                    //insert a new profile
+                    conn.query(`INSERT INTO PC (uid, name, email, address, contact, dob, department, post) values (?, ?, ?, ?, ?, ?, ?, ?)`, [id, data.name, data.email, data.address, data.contact, data.dob, data.department, data.post], (err, result)=>{
+                        if(err){
+                            console.log(err);
+                            res.send({"sts" : "failure"});
+                            return conn.rollback(function () {
+                                console.log('Rolling Back the transaction');
+                            })  
+                        }
+                        
+                        console.log('Details Updation Successful')
+                        const profileImage = req.files.profileImage;
+                        conn.query(`INSERT INTO ProfileImage (sid, name, data, size, encoding, mimetype) values (?, ?, ?, ?, ?, ?)`, [id, profileImage.name, profileImage.data, profileImage.size, profileImage.encoding, profileImage.mimetype], (err, result) => {
+                            if(err) {
+                                console.log(err);
+                                res.send({"sts": "failure"});
+                                return conn.rollback(function () {
+                                    console.log('Rolling Back the transaction');
+                                })  
+                            }
+
+                            console.log('Insert Profile Image Successful')
+                            conn.commit(function(err) {
+                                if (err) {
+                                    console.log(err);
+                                    res.send({"sts": "failure"});
+                                    return conn.rollback(function () {
+                                        console.log('Rolling Back the transaction');
+                                    })      
+                                }
+                                console.log('Profile Updation [Change existing] Success');
+                                res.send({"sts" : "success"});                        
+                            });
+                        })
+                    });
+                }
+                
+            });
+
+        })
+        
     }
     
 
@@ -425,3 +632,26 @@ app.get('/getResume/:id', (req, res) => {
         }
     })
 })
+
+
+
+app.get('/getProfileImage/:id', (req, res) => {
+    const sid = req.params.id;
+    conn.query('SELECT * FROM ProfileImage WHERE sid = ?', [sid], (err, result) => {
+        if(err){
+            console.log(err);
+            res.send({"sts": "failure"});
+        }
+        else{   
+            // console.log(result[0])
+            if(result.length > 0){
+                var buff = new Buffer.from(result[0].data)
+                res.send({"sts": "success", "data": buff});
+            }
+            else{
+                res.send({"sts" : "success", "data" : null});
+            }
+        }
+    })
+})
+

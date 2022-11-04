@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import '../styles/userInfo.css';
 import { faCircleUser } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Lottie from 'lottie-react';
 import loader from '../assets/97952-loading-animation-blue.json';
+import '../styles/avatar.css';
 import { getDateString } from "../utilFunc";
 import TextAnim from "../components/textAnim.js";
 import { Modal, Button } from "react-bootstrap";
@@ -24,7 +25,9 @@ export default function UserInfo () {
     const [resumeError, setResumeError] = useState();
     const [resumeURL, setResumeURL] = useState();
     const [show, setShow] = useState(false);
-
+    const [userIconAvatarView, setUserIconAvatarView] = useState(false);
+    const profileImageView = useRef();
+    const [profileImageUrl, setProfileImageUrl] = useState('');
 
     const handleClose = () => setShow(false);
     const handleShow = (event) => {
@@ -85,8 +88,15 @@ export default function UserInfo () {
     }
 
 
+    const fetchProfileImage = function (id) {
+        const reqUrl = url + '/getProfileImage/' + id;
+        return axios.get(reqUrl);
+    }
+
+
 
     useEffect(() =>  {
+        let userDetails = {}
         startFetch();
         const reqUrl = url + '/userInfo/' + currentUser.uid;
         axios.get(reqUrl, {
@@ -100,10 +110,28 @@ export default function UserInfo () {
                 throw "Failed to Load Data"
             }
             else{
-                setDetails(respData.data);
+                userDetails = respData.data;
+                setDetails(userDetails);
+                return fetchProfileImage(currentUser.uid);
+            }
+        })
+        .then((res) => {
+            var respData = res.data;
+            if(respData.sts === "failure"){
+                throw "Failed to Load Data"
+            }
+            else{
+                if(respData.data !== null){
+                    const arr = new Uint8Array(respData.data.data);
+                    const blob = new Blob([arr], { type: 'image/jpeg' });
+                    const imgURL = URL.createObjectURL(blob);
+                    setProfileImageUrl(imgURL);
+                    setUserIconAvatarView(true);
+                }
+            
                 if(role === "Student"){
-                    if(respData.data.placedAt !== null){
-                        return fetchCompanyName(respData.data.placedAt);
+                    if(userDetails.placedAt !== null){
+                        return fetchCompanyName(userDetails.placedAt);
                     }
                 }
                 return true;
@@ -112,6 +140,7 @@ export default function UserInfo () {
         .then((res) => {
             if(res !== true){
                 var respData = res.data;
+                console.log(respData)
                 if(respData.sts === "failure"){
                     throw "Failed to load data";
                 }
@@ -153,9 +182,15 @@ export default function UserInfo () {
                 
 
                 {role==="Placement Coordinator" && <p>PLACEMENT COORDINATOR</p>}
-                <div className='userIcon'>
-                <FontAwesomeIcon icon={faCircleUser}/>
+
+                <div className="avatar-wrapper mb-3">
+                    <div className="upload-button">
+                        <FontAwesomeIcon icon={faCircleUser} className="circular-user" hidden={userIconAvatarView}/>
+                        <img src={profileImageUrl} alt="No image" ref={profileImageView} hidden={!userIconAvatarView}/>    
+                    </div>
                 </div>
+                
+                
                 <br/>
                 <h1>{details.name}</h1>
                 <br/>
