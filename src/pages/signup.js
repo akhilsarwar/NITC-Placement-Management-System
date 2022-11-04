@@ -55,7 +55,9 @@ export default function SignUp () {
                 setError();
                 setLoading(true);
                 let isPc = false
+                
                 if(role.current.value === "Placement Coordinator"){
+                    console.log('here********   ')
                     isPc = await checkIfValidPCEmail();
                     console.log(isPc)
                     if(isPc){
@@ -71,9 +73,9 @@ export default function SignUp () {
                     navigateToUpdateProfile(email);
                 }
             }
-            catch{
+            catch(err){
                 setError('Sign Up Failed')
-                console.log(error)
+                console.log(err)
             }
         }
         else{

@@ -1,9 +1,9 @@
 import React from "react";
 import Footer from '../components/footer.js';
 import Carousel from 'react-bootstrap/Carousel';
-import image1 from '../assets/image1.jpg';
-import image2 from '../assets/image2.jpg';
-import image3 from '../assets/image3.jpg';
+import image1 from '../assets/image6.jpg';
+import image2 from '../assets/image5.jpg';
+import image3 from '../assets/image4.jpg';
 import '../styles/home.css';
 import { useAuth } from "../context/AuthContext.js";
 
@@ -28,8 +28,8 @@ export default function Home() {
           alt="First slide"
         />
         <Carousel.Caption>
-          <h2>NITC Placement Management Portal</h2>
-          <p>Chase your dreams !!</p>
+          <h1>NITC Placement Management Portal</h1>
+          <p>In recruiting, there are no good or bad experiences - just learning experiences!!</p>
         </Carousel.Caption>
       </Carousel.Item>
       <Carousel.Item>
@@ -39,8 +39,8 @@ export default function Home() {
           alt="Second slide"
         />
         <Carousel.Caption>
-          <h2>NITC Placement Management Portal</h2>
-          <p>Chase your dreams !!</p>
+          <h1>NITC Placement Management Portal</h1>
+          <p>Chase your dreams !!. Success doesn't come to you, you go to it.</p>
         </Carousel.Caption>
       </Carousel.Item>
       <Carousel.Item>
@@ -50,8 +50,8 @@ export default function Home() {
           alt="Third slide"
         />
         <Carousel.Caption>
-          <h2>NITC Placement Management Portal</h2>
-          <p>Chase your dreams !!</p>
+          <h1>NITC Placement Management Portal</h1>
+          <p>A one stop portal for placements!!</p>
         </Carousel.Caption>
       </Carousel.Item>
     </Carousel>

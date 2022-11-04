@@ -26,22 +26,22 @@ var conn = mysql.createConnection({
 });
 
 
-conn.connect((err)=>{
-    if(err){
-        console.log(err);
-    }
-    else
-        console.log('Connected to database')
-})
 
-kill(3001).then(() => {
+
+kill(3001)
+.catch(() => {
+    console.log('Kill failed')
+})
+.finally(()=> {
     app.listen(3001, ()=>{
         console.log('Server listening on 3001');
     })
-})
-.catch(() => {
-    app.listen(3001, ()=>{
-        console.log('Server listening on 3001');
+    conn.connect((err)=>{
+        if(err){
+            console.log(err);
+        }
+        else
+            console.log('Connected to database')
     })
 })
 
