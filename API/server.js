@@ -16,14 +16,23 @@ const fs = require('fs');
 const killPort = require('kill-port');
 
 
-var conn = mysql.createConnection({
-  host: "nitc-pms.mysql.database.azure.com",
-  user: "akhilsarwarth",
-  password: "Qwertyuiop[]*0123#",
-  database: "NITC_PMS",
-  port: 3306,
-  ssl: {ca: fs.readFileSync("./database/DigiCertGlobalRootCA.crt.pem")}
-});
+const localStorage = {
+    host: "localhost",
+    user: "root",
+    password: "Qwertyuiop[]*0123#",
+    database: "nitc_pms"
+}
+
+const remoteStorage = {
+    host: "nitc-pms.mysql.database.azure.com",
+    user: "akhilsarwarth",
+    password: "Qwertyuiop[]*0123#",
+    database: "NITC_PMS",
+    port: 3306,
+    ssl: {ca: fs.readFileSync("./database/DigiCertGlobalRootCA.crt.pem")}
+}
+
+var conn = mysql.createConnection(localStorage);
 
 
 
@@ -46,28 +55,18 @@ kill(3001)
 })
 
 
-app.get('/studentDetails/:id', (req, res) => {
-    const id = req.params.id;
-    const query = `SELECT * FROM Student WHERE uid='${id}'`;
-    conn .query(query, (err, result) => {
-        console.log(result);
-        res.send(result[0]);
-    });
-});
-
 
 app.get('/userInfo/:id', (req, res) => {
     const id = req.params.id;
-    console.log(req.query);
     const role = req.query.role;
     let query = "";
     if(role === "Student"){
-        query = `SELECT * FROM Student WHERE uid='${id}'`;
+        query = `SELECT * FROM student WHERE uid='${id}'`;
     }
     else{
-        query = `SELECT * FROM PC WHERE uid = '${id}'`;
+        query = `SELECT * FROM pc WHERE uid = '${id}'`;
     }
-    conn .query(query, (err, result) => {
+    conn.query(query, (err, result) => {
         if(err){
             console.log(err);
             res.send({sts: "failure"});
@@ -97,7 +96,7 @@ app.post('/updateUserProfile/:id', (req, res)=> {
                 res.send({"sts" : "failure"});
             }
 
-            conn.query(`SELECT uid FROM Student WHERE uid=?`, [id], (err, result) => {
+            conn.query(`SELECT uid FROM student WHERE uid=?`, [id], (err, result) => {
                 if(err){
                     console.log(err);
                     res.send({"sts" : "failure"});
@@ -108,7 +107,7 @@ app.post('/updateUserProfile/:id', (req, res)=> {
                 if(result.length > 0){
                     
                     //update the profile
-                    conn.query(`UPDATE Student SET name=?, rollNo=?, email=?, cgpa=?, address=?, contact=?, stream=?, branch=?, dob=?, placedAt=? WHERE uid=?`, [data.name, data.rollNo, data.email, data.cgpa, data.address, data.contact, data.stream, data.branch, data.dob, data.placedAt, id], (err, result) =>{
+                    conn.query(`UPDATE student SET name=?, rollNo=?, email=?, cgpa=?, address=?, contact=?, stream=?, branch=?, dob=?, placedAt=? WHERE uid=?`, [data.name, data.rollNo, data.email, data.cgpa, data.address, data.contact, data.stream, data.branch, data.dob, data.placedAt, id], (err, result) =>{
                         if(err){
             
                             console.log(err);
@@ -121,7 +120,7 @@ app.post('/updateUserProfile/:id', (req, res)=> {
                         else{
                             const resumeFile = req.files.resume;
                             if(resumeFile !== null){
-                                conn.query(`DELETE FROM Resume WHERE sid=?`, [id], (err, result) => {
+                                conn.query(`DELETE FROM resume WHERE sid=?`, [id], (err, result) => {
                                     if(err){
                                         console.log(err);
                                         res.send({"sts" : "failure"});
@@ -130,8 +129,8 @@ app.post('/updateUserProfile/:id', (req, res)=> {
                                         })
                                     }
                                     else{
-                                        console.log('Delete Resume Successful')
-                                        conn.query(`INSERT INTO Resume (sid, name, data, size, encoding, mimetype) values (?, ?, ?, ?, ?, ?)`, [id, resumeFile.name, resumeFile.data, resumeFile.size, resumeFile.encoding, resumeFile.mimetype], (err, result) => {
+                                        console.log('Delete resume Successful')
+                                        conn.query(`INSERT INTO resume (sid, name, data, size, encoding, mimetype) values (?, ?, ?, ?, ?, ?)`, [id, resumeFile.name, resumeFile.data, resumeFile.size, resumeFile.encoding, resumeFile.mimetype], (err, result) => {
                                             if(err){
                                                 console.log(err);
                                                 res.send({"sts": "failure"});
@@ -139,10 +138,10 @@ app.post('/updateUserProfile/:id', (req, res)=> {
                                                     console.log('Rolling Back the transaction');
                                                 })
                                             }
-                                            console.log('Insert Resume Successful')
+                                            console.log('Insert resume Successful')
                                             const profileImage = req.files.profileImage;
                                             if(profileImage !== null){
-                                                conn.query(`DELETE FROM ProfileImage WHERE sid=?`, [id], (err, result) => {
+                                                conn.query(`DELETE FROM profileimage WHERE sid=?`, [id], (err, result) => {
                                                     if(err){
                                                         console.log(err);
                                                         res.send({"sts": "failure"});
@@ -151,7 +150,7 @@ app.post('/updateUserProfile/:id', (req, res)=> {
                                                         })      
                                                     }
                                                     console.log('Delete Profile Image Successful')
-                                                    conn.query(`INSERT INTO ProfileImage (sid, name, data, size, encoding, mimetype) values (?, ?, ?, ?, ?, ?)`, [id, profileImage.name, profileImage.data, profileImage.size, profileImage.encoding, profileImage.mimetype], (err, result) => {
+                                                    conn.query(`INSERT INTO profileimage (sid, name, data, size, encoding, mimetype) values (?, ?, ?, ?, ?, ?)`, [id, profileImage.name, profileImage.data, profileImage.size, profileImage.encoding, profileImage.mimetype], (err, result) => {
                                                         if(err) {
                                                             console.log(err);
                                                             res.send({"sts": "failure"});
@@ -214,7 +213,7 @@ app.post('/updateUserProfile/:id', (req, res)=> {
                 }
                 else{
                     //insert a new profile
-                    conn.query(`INSERT INTO Student (uid, name, rollNo, email, cgpa, address, contact, stream, branch, dob, placedAt) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,?)`, [id, data.name, data.rollNo, data.email, data.cgpa, data.address, data.contact, data.stream, data.branch, data.dob, data.placedAt], (err, result)=>{
+                    conn.query(`INSERT INTO student (uid, name, rollNo, email, cgpa, address, contact, stream, branch, dob, placedAt) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,?)`, [id, data.name, data.rollNo, data.email, data.cgpa, data.address, data.contact, data.stream, data.branch, data.dob, data.placedAt], (err, result)=>{
                         if(err) {
                             console.log(err);
                             res.send({"sts": "failure"});
@@ -228,7 +227,7 @@ app.post('/updateUserProfile/:id', (req, res)=> {
                             //add resume to the resume table
                             const resumeFile = req.files.resume;
 
-                            conn.query(`INSERT INTO Resume (sid, name, data, size, encoding, mimetype) values (?, ?, ?, ?, ?, ?)`, [id, resumeFile.name, resumeFile.data, resumeFile.size, resumeFile.encoding, resumeFile.mimetype], (err, result) => {
+                            conn.query(`INSERT INTO resume (sid, name, data, size, encoding, mimetype) values (?, ?, ?, ?, ?, ?)`, [id, resumeFile.name, resumeFile.data, resumeFile.size, resumeFile.encoding, resumeFile.mimetype], (err, result) => {
                                 if(err) {
                                     console.log(err);
                                     res.send({"sts": "failure"});
@@ -237,9 +236,9 @@ app.post('/updateUserProfile/:id', (req, res)=> {
                                     })  
                                 }
                                 
-                                console.log('Insert Resume Successful')
+                                console.log('Insert resume Successful')
                                 const profileImage = req.files.profileImage;
-                                conn.query(`INSERT INTO ProfileImage (sid, name, data, size, encoding, mimetype) values (?, ?, ?, ?, ?, ?)`, [id, profileImage.name, profileImage.data, profileImage.size, profileImage.encoding, profileImage.mimetype], (err, result) => {
+                                conn.query(`INSERT INTO profileimage (sid, name, data, size, encoding, mimetype) values (?, ?, ?, ?, ?, ?)`, [id, profileImage.name, profileImage.data, profileImage.size, profileImage.encoding, profileImage.mimetype], (err, result) => {
                                     if(err) {
                                         console.log(err);
                                         res.send({"sts": "failure"});
@@ -279,7 +278,7 @@ app.post('/updateUserProfile/:id', (req, res)=> {
                 res.send({"sts" : "failure"});
             }
 
-            conn.query(`SELECT uid FROM PC WHERE uid=?`, [id], (err, result) => {
+            conn.query(`SELECT uid FROM pc WHERE uid=?`, [id], (err, result) => {
                 if(err){
                     console.log(err);
                     res.send({"sts" : "failure"});
@@ -289,7 +288,7 @@ app.post('/updateUserProfile/:id', (req, res)=> {
                 }
                 if(result.length > 0){
                     //update the profile
-                    conn.query(`UPDATE PC SET name=?, email=?, address=?, contact=?, dob=?, department=?, post=? WHERE uid=?`, [data.name, data.email, data.address, data.contact, data.dob, data.department, data.post, id], (err, result) =>{
+                    conn.query(`UPDATE pc SET name=?, email=?, address=?, contact=?, dob=?, department=?, post=? WHERE uid=?`, [data.name, data.email, data.address, data.contact, data.dob, data.department, data.post, id], (err, result) =>{
                         if(err){
                             console.log(err);
                             res.send({"sts" : "failure"});
@@ -301,7 +300,7 @@ app.post('/updateUserProfile/:id', (req, res)=> {
                         console.log('Details Updation Successful')
                         const profileImage = req.files.profileImage;
                         if(profileImage !== null){
-                            conn.query(`DELETE FROM ProfileImage WHERE sid=?`, [id], (err, result) => {
+                            conn.query(`DELETE FROM profileimage WHERE sid=?`, [id], (err, result) => {
                                 if(err){
                                     console.log(err);
                                     res.send({"sts": "failure"});
@@ -311,7 +310,7 @@ app.post('/updateUserProfile/:id', (req, res)=> {
                                 }
 
                                 console.log('Delete Profile Image Successful')
-                                conn.query(`INSERT INTO ProfileImage (sid, name, data, size, encoding, mimetype) values (?, ?, ?, ?, ?, ?)`, [id, profileImage.name, profileImage.data, profileImage.size, profileImage.encoding, profileImage.mimetype], (err, result) => {
+                                conn.query(`INSERT INTO profileimage (sid, name, data, size, encoding, mimetype) values (?, ?, ?, ?, ?, ?)`, [id, profileImage.name, profileImage.data, profileImage.size, profileImage.encoding, profileImage.mimetype], (err, result) => {
                                     if(err) {
                                         console.log(err);
                                         res.send({"sts": "failure"});
@@ -355,7 +354,7 @@ app.post('/updateUserProfile/:id', (req, res)=> {
                 }
                 else{
                     //insert a new profile
-                    conn.query(`INSERT INTO PC (uid, name, email, address, contact, dob, department, post) values (?, ?, ?, ?, ?, ?, ?, ?)`, [id, data.name, data.email, data.address, data.contact, data.dob, data.department, data.post], (err, result)=>{
+                    conn.query(`INSERT INTO pc (uid, name, email, address, contact, dob, department, post) values (?, ?, ?, ?, ?, ?, ?, ?)`, [id, data.name, data.email, data.address, data.contact, data.dob, data.department, data.post], (err, result)=>{
                         if(err){
                             console.log(err);
                             res.send({"sts" : "failure"});
@@ -366,7 +365,7 @@ app.post('/updateUserProfile/:id', (req, res)=> {
                         
                         console.log('Details Updation Successful')
                         const profileImage = req.files.profileImage;
-                        conn.query(`INSERT INTO ProfileImage (sid, name, data, size, encoding, mimetype) values (?, ?, ?, ?, ?, ?)`, [id, profileImage.name, profileImage.data, profileImage.size, profileImage.encoding, profileImage.mimetype], (err, result) => {
+                        conn.query(`INSERT INTO profileimage (sid, name, data, size, encoding, mimetype) values (?, ?, ?, ?, ?, ?)`, [id, profileImage.name, profileImage.data, profileImage.size, profileImage.encoding, profileImage.mimetype], (err, result) => {
                             if(err) {
                                 console.log(err);
                                 res.send({"sts": "failure"});
@@ -403,7 +402,7 @@ app.post('/updateUserProfile/:id', (req, res)=> {
 
 app.post('/addRecruiter', (req, res) => {
     const data = req.body;
-    conn.query(`INSERT INTO Recruiter (name, jobRole, jobDescription, ctc, minCgpaRequired, jobLocation, jobRequirements) values (?, ?, ?, ?, ?, ?, ?)`, [data.name, data.jobRole, data.jobDescription, data.ctc, data.minCgpaRequired, data.jobLocation, data.jobRequirements], (err, result)=>{
+    conn.query(`INSERT INTO recruiter (name, jobRole, jobDescription, ctc, minCgpaRequired, jobLocation, jobRequirements) values (?, ?, ?, ?, ?, ?, ?)`, [data.name, data.jobRole, data.jobDescription, data.ctc, data.minCgpaRequired, data.jobLocation, data.jobRequirements], (err, result)=>{
         if(err){
             console.log(err);
             res.send({"sts": "failure"});
@@ -428,9 +427,9 @@ app.get('/getRecruiters/:id?', (req, res) => {
 
     var query = "";
     if(rid === undefined){
-        query = `SELECT * FROM Recruiter WHERE `;
+        query = `SELECT * FROM recruiter WHERE `;
         if(role === "Student"){
-            query = `SELECT * FROM Recruiter R WHERE R.minCgpaRequired <= (SELECT cgpa FROM Student S WHERE S.uid = '${sid}') AND `;
+            query = `SELECT * FROM recruiter R WHERE R.minCgpaRequired <= (SELECT cgpa FROM student S WHERE S.uid = '${sid}') AND `;
         }
         for(var i = 0; i < filterOn.length - 1; i++){
             query += filterOn[i] + " LIKE '%" + filterString + "%' OR "; 
@@ -438,7 +437,7 @@ app.get('/getRecruiters/:id?', (req, res) => {
         query += filterOn[filterOn.length - 1] + " LIKE '%" + filterString + "%'";
     }
     else{
-        query = `SELECT * FROM Recruiter WHERE id='${rid}'`;
+        query = `SELECT * FROM recruiter WHERE id='${rid}'`;
         
     }
 
@@ -460,7 +459,7 @@ app.get('/getRecruiters/:id?', (req, res) => {
 
 app.delete('/deleteRecruiter/:id?', (req, res)=>{
     const rid = req.params.id;
-    conn.query(`DELETE FROM Recruiter WHERE id=?`, [rid], (err, result)=>{
+    conn.query(`DELETE FROM recruiter WHERE id=?`, [rid], (err, result)=>{
         if(err){
             console.log(err);
             res.send({"sts": "failure"});
@@ -480,14 +479,14 @@ app.get('/getStudents/:id?', (req, res) => {
 
     var query = "";
     if(sid === undefined){
-        query = `SELECT * FROM Student WHERE `;
+        query = `SELECT * FROM student WHERE `;
         for(var i = 0; i < filterOn.length - 1; i++){
             query += filterOn[i] + " LIKE '%" + filterString + "%' OR "; 
         }
         query += filterOn[filterOn.length - 1] + " LIKE '%" + filterString + "%'";
     }
     else{
-        query = `SELECT * FROM Student WHERE uid='${sid}'`;
+        query = `SELECT * FROM student WHERE uid='${sid}'`;
         
     }
     conn.query(query, (err, result) => {
@@ -504,11 +503,12 @@ app.get('/getStudents/:id?', (req, res) => {
 
 
 
+//returns whether a student has applied to a particular recruiter or not
 app.get('/getAppliedStatus', (req, res) => {
     const sid = req.query.sid;
     const rid = req.query.rid;
 
-    conn.query('SELECT * FROM Applied WHERE sid=? AND rid=?', [sid, rid], (err, result) => {
+    conn.query('SELECT * FROM applied WHERE sid=? AND rid=?', [sid, rid], (err, result) => {
         if(err){
             console.log(err);
             res.send({"sts": "failure"});
@@ -526,11 +526,12 @@ app.get('/getAppliedStatus', (req, res) => {
 
 
 
+
 app.post('/apply', (req, res) => {
     const sid = req.body.sid;
     const rid = req.body.rid;
     const appliedTime = req.body.appliedTime;
-    conn.query('INSERT INTO Applied (sid, rid, appliedTime) values (?, ?, ?)', [sid, rid, appliedTime], (err, result)=> {
+    conn.query('INSERT INTO applied (sid, rid, appliedTime) values (?, ?, ?)', [sid, rid, appliedTime], (err, result)=> {
         if(err){
             console.log(err);
             res.send({"sts": "failure"});
@@ -543,9 +544,10 @@ app.post('/apply', (req, res) => {
 })
 
 
+//returns all the applied recruiters for a particular student
 app.get('/getApplied', (req, res) => {
     const sid = req.query.sid;
-    const query = "SELECT * FROM Recruiter R WHERE R.id IN (SELECT A.rid FROM Applied A WHERE A.sid = ?)";
+    const query = "SELECT * FROM recruiter R WHERE R.id IN (SELECT A.rid FROM applied A WHERE A.sid = ?)";
     conn.query(query, [sid], (err, result) => {
         if(err){
             console.log(err);
@@ -561,7 +563,7 @@ app.get('/getApplied', (req, res) => {
 app.patch('/updatePlacedAt/:id', (req, res) =>{
     const placedAt = req.body.placedAt;
     const id = req.params.id;
-    conn.query('UPDATE Student SET placedAt = ? WHERE uid = ?', [placedAt, id], (err, result) => {
+    conn.query('UPDATE student SET placedAt = ? WHERE uid = ?', [placedAt, id], (err, result) => {
         if(err){
             console.log(err);
             res.send({"sts": "failure"});
@@ -575,7 +577,7 @@ app.patch('/updatePlacedAt/:id', (req, res) =>{
 
 app.get('/getPlacementStatus/:id', (req, res) => {
     const id = req.params.id;
-    conn.query('SELECT placedAt from Student WHERE uid = ?', [id], (err, result) => {
+    conn.query('SELECT placedAt from student WHERE uid = ?', [id], (err, result) => {
         if(err){
             console.log(err);
             res.send({"sts": "failure"});
@@ -592,14 +594,14 @@ app.get('/getPlacementStatus/:id', (req, res) => {
 app.patch('/changeHiringStatus/:id', (req, res) => {
     const rid = req.params.id;
     // console.log(rid)
-    conn.query('SELECT hiringStatus FROM Recruiter WHERE id = ?', [rid], (err, result) => {
+    conn.query('SELECT hiringStatus FROM recruiter WHERE id = ?', [rid], (err, result) => {
         if(err){
             console.log(err);
             res.send({"sts": "failure"});
         }
         else{
             const now = result[0].hiringStatus === 0 ? 1: 0;
-            conn.query('UPDATE Recruiter SET hiringStatus=? WHERE id=?', [now, rid], (err, result)=>{
+            conn.query('UPDATE recruiter SET hiringStatus=? WHERE id=?', [now, rid], (err, result)=>{
                 if(err){
                     console.log(err);
                     res.send({"sts": "failure"});
@@ -615,7 +617,7 @@ app.patch('/changeHiringStatus/:id', (req, res) => {
 
 app.get('/getResume/:id', (req, res) => {
     const sid = req.params.id;
-    conn.query('SELECT * FROM Resume WHERE sid = ?', [sid], (err, result) => {
+    conn.query('SELECT * FROM resume WHERE sid = ?', [sid], (err, result) => {
         if(err){
             console.log(err);
             res.send({"sts": "failure"});
@@ -637,7 +639,7 @@ app.get('/getResume/:id', (req, res) => {
 
 app.get('/getProfileImage/:id', (req, res) => {
     const sid = req.params.id;
-    conn.query('SELECT * FROM ProfileImage WHERE sid = ?', [sid], (err, result) => {
+    conn.query('SELECT * FROM profileimage WHERE sid = ?', [sid], (err, result) => {
         if(err){
             console.log(err);
             res.send({"sts": "failure"});
