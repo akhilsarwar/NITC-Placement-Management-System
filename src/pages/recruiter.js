@@ -9,7 +9,7 @@ import TableView from "../components/tableView";
 import Lottie from 'lottie-react';
 import loader from '../assets/97952-loading-animation-blue.json';
 
-export default function Recruiter(){
+export default function Recruiter() {
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState();
@@ -20,30 +20,30 @@ export default function Recruiter(){
     const navigate = useNavigate();
     const searchRef = useRef();
 
-    const startFetch = function(){
+    const startFetch = function () {
         setLoading(true);
         setError();
     }
 
-    const setHiringStatusIcon = function (arr){
-        for(var i = 0; i < arr.length; i++){
-            if(arr[i].hiringStatus === 1){
+    const setHiringStatusIcon = function (arr) {
+        for (var i = 0; i < arr.length; i++) {
+            if (arr[i].hiringStatus === 1) {
                 arr[i]['hiringIcon'] = <span>
-                    <FontAwesomeIcon icon={faClock} className="me-2" style={{color: "orange"}}/>
+                    <FontAwesomeIcon icon={faClock} className="me-2" style={{ color: "orange" }} />
                     Pending
                 </span>
-            }else{
+            } else {
                 arr[i]['hiringIcon'] = <span>
                     <FontAwesomeIcon icon={faCheck} className="me-2"
-                    style={{color: "green"}}/>
+                        style={{ color: "green" }} />
                     Hiring Over
                 </span>
             }
         }
     }
 
-    const getApplied = function(){
-        const reqUrl = url + '/getApplied';
+    const getApplied = function () {
+        const reqUrl = url + '/student/getApplied';
         return axios.get(reqUrl, {
             params: {
                 sid: currentUser.uid
@@ -55,53 +55,53 @@ export default function Recruiter(){
     //fetching recruiters filtered for columns - Company, Job Role, Job Location
     const fetchRecruiters = function (filterString) {
         startFetch();
-        let reqUrl = url + '/getRecruiters';
+        let reqUrl = url + '/recruiter/getRecruiters';
         reqUrl += `?role=${role}`
         reqUrl += `&uid=${currentUser.uid}`
         reqUrl += `&filterString=${filterString}`
         reqUrl += `&filterOn=${JSON.stringify(['name', 'jobRole', 'jobLocation'])}`
-        
+
         axios.get(reqUrl, {})
-             .then((res) => {
+            .then((res) => {
                 //TODO: assign data to the table
                 const respData = res.data;
-                if(respData.sts === "failure"){
+                if (respData.sts === "failure") {
                     setError('Failed to Load')
                 }
-                else{
+                else {
                     setHiringStatusIcon(respData.data);
-                    setRecArray(respData.data); 
-                    
+                    setRecArray(respData.data);
+
                 }
-                if(role === "Student"){
+                if (role === "Student") {
                     return getApplied()
                 }
-                else{
+                else {
                     return true;
                 }
-                
-             })
-             .then((res) => {
 
-                if(role === "Student"){
+            })
+            .then((res) => {
+
+                if (role === "Student") {
                     const respData = res.data;
                     setHiringStatusIcon(respData.data);
                     setAppliedRec(respData.data);
                 }
-            
-                setLoading(false);    
-             })
-             .catch((err) => {
+
+                setLoading(false);
+            })
+            .catch((err) => {
                 console.log(err);
                 setLoading(false);
                 setError('Failed to Load')
                 console.log(err);
-             })
+            })
     }
 
 
-    
-    useEffect(()=>{
+
+    useEffect(() => {
         fetchRecruiters('');
     }, []);
 
@@ -109,71 +109,71 @@ export default function Recruiter(){
 
     return (
         <div className="safeArea">
-        <h1 className="mb-4">Recruiters</h1>
+            <h1 className="mb-4">Recruiters</h1>
 
-        <div className="input-group mb-4 searchBar">
-            <div className="form-floating">
-              <input type="search" id="searchField" className="form-control" placeholder="Search" ref={searchRef}/>
-              <label className="form-label" htmlFor="searchField">Search</label>
+            <div className="input-group mb-4 searchBar">
+                <div className="form-floating">
+                    <input type="search" id="searchField" className="form-control" placeholder="Search" ref={searchRef} />
+                    <label className="form-label" htmlFor="searchField">Search</label>
+                </div>
+                <button type="button" className="btn btn-primary search" style={{ height: "58px" }} onClick={() => {
+                    fetchRecruiters(searchRef.current.value);
+                }}>
+                    <FontAwesomeIcon icon={faSearch} />
+                </button>
             </div>
-            <button type="button" className="btn btn-primary search" style={{height: "58px"}} onClick={() => {
-                fetchRecruiters(searchRef.current.value);
-            }}>
-            <FontAwesomeIcon icon={faSearch} />
-            </button>
-          </div>
 
-        {
-            role === "Placement Coordinator"
-            &&
-            <div className="mb-4">
-            <button type="button" className="btn btn-primary" onClick={(e)=>{navigate('/addRecruiter', {state: {}, replace: false})}}>Add Recruiter</button>
-            </div>
-        }
-        
-          
-        {
-            loading
-            &&
-            // <LoaderAnim/>
-            <Lottie animationData={loader} loop={true} className="loaderAnimation"></Lottie>
-        }
+            {
+                role === "Placement Coordinator"
+                &&
+                <div className="mb-4">
+                    <button type="button" className="btn btn-primary" onClick={(e) => { navigate('/addRecruiter', { state: {}, replace: false }) }}>Add Recruiter</button>
+                </div>
+            }
 
-        {!loading && recArray.length > 0 && 
-        <TableView tableHeads={["Company", "Job Role", "CTC", "Job Location", "Hiring Status", "Action"]} tableData={recArray} displayFields={["name", "jobRole", "ctc", "jobLocation", "hiringIcon"]} dataViewLink='/viewRecruiter' idField="id" />
-        }
 
-        {!loading && recArray.length == 0 && 
-            <center>
-                <h2>No Data</h2>
-            </center>
-        }
+            {
+                loading
+                &&
+                // <LoaderAnim/>
+                <Lottie animationData={loader} loop={true} className="loaderAnimation"></Lottie>
+            }
 
-        {
-            role=="Student"
-            &&
-            <>
-                {!loading &&
+            {!loading && recArray.length > 0 &&
+                <TableView tableHeads={["Company", "Job Role", "CTC", "Job Location", "Hiring Status", "Action"]} tableData={recArray} displayFields={["name", "jobRole", "ctc", "jobLocation", "hiringIcon"]} dataViewLink='/viewRecruiter' idField="id" />
+            }
 
-                    <h2 style={{marginTop: "100px"}} className="mb-4">Applied</h2>
-                }
-                {
-                    !loading && appliedRec.length > 0
-                    &&
-                    <>
-                        
-                        <TableView tableHeads={["Company", "Job Role", "CTC", "Job Location", "Hiring Status", "Action"]} tableData={appliedRec} displayFields={["name", "jobRole", "ctc", "jobLocation", "hiringIcon"]} dataViewLink='/viewRecruiter' idField="id" />
-                    </>
-                    
-                }
-                {!loading && appliedRec.length == 0 && 
-                    <center>
-                        <h2>No Data</h2>
-                    </center>
-                }
-            </>
-        }
-                   
+            {!loading && recArray.length == 0 &&
+                <center>
+                    <h2>No Data</h2>
+                </center>
+            }
+
+            {
+                role == "Student"
+                &&
+                <>
+                    {!loading &&
+
+                        <h2 style={{ marginTop: "100px" }} className="mb-4">Applied</h2>
+                    }
+                    {
+                        !loading && appliedRec.length > 0
+                        &&
+                        <>
+
+                            <TableView tableHeads={["Company", "Job Role", "CTC", "Job Location", "Hiring Status", "Action"]} tableData={appliedRec} displayFields={["name", "jobRole", "ctc", "jobLocation", "hiringIcon"]} dataViewLink='/viewRecruiter' idField="id" />
+                        </>
+
+                    }
+                    {!loading && appliedRec.length == 0 &&
+                        <center>
+                            <h2>No Data</h2>
+                        </center>
+                    }
+                </>
+            }
+
         </div>
     );
 }

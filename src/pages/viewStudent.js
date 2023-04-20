@@ -11,7 +11,7 @@ import TextAnim from "../components/textAnim.js";
 import Lottie from 'lottie-react';
 import loader from '../assets/97952-loading-animation-blue.json';
 
-export default function ViewStudent(){
+export default function ViewStudent() {
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState();
@@ -32,10 +32,10 @@ export default function ViewStudent(){
     const sid = location.state.id;
 
 
-    const filterRecruiter = function (arr){
+    const filterRecruiter = function (arr) {
         let newarr = [];
-        for(var i = 0; i< arr.length; i++){
-            if(arr[i].hiringStatus === 1){
+        for (var i = 0; i < arr.length; i++) {
+            if (arr[i].hiringStatus === 1) {
                 newarr.push(arr[i]);
             }
         }
@@ -48,34 +48,34 @@ export default function ViewStudent(){
         setModalLoading(true)
         setModalError()
         getApplied()
-        .then((res) => {
-            const respData = res.data;
-            if(respData.sts === "failure"){
+            .then((res) => {
+                const respData = res.data;
+                if (respData.sts === "failure") {
+                    setModalError('Failed to Load')
+                }
+                else {
+                    respData.data = filterRecruiter(respData.data);
+                    setAppliedRec(respData.data);
+                }
+                setModalLoading(false)
+            })
+            .catch((err) => {
                 setModalError('Failed to Load')
-            }
-            else{
-                respData.data = filterRecruiter(respData.data);
-                setAppliedRec(respData.data);
-            }
-            setModalLoading(false)
-        })
-        .catch((err) => {
-            setModalError('Failed to Load')
-            setModalLoading(false)
-        })
+                setModalLoading(false)
+            })
         setShow(true);
     }
 
 
 
-    const startFetch = function(){
+    const startFetch = function () {
         setLoading(true);
         setError();
     }
 
 
-    const getApplied = function(){
-        const reqUrl = url + '/getApplied';
+    const getApplied = function () {
+        const reqUrl = url + '/student/getApplied';
         return axios.get(reqUrl, {
             params: {
                 sid: sid
@@ -85,61 +85,61 @@ export default function ViewStudent(){
 
 
     const fetchCompanyName = function (id) {
-        const reqUrl = url + '/getRecruiters/' + id;
+        const reqUrl = url + '/recruiter/getRecruiters/' + id;
         return axios.get(reqUrl);
     }
 
 
-    useEffect(()=>{
+    useEffect(() => {
         startFetch();
-        const reqUrl = url + '/getStudents/' + sid;
-        
+        const reqUrl = url + '/student/get/' + sid;
+
         axios.get(reqUrl, {})
-             .then((res) => {
+            .then((res) => {
                 const respData = res.data;
-                if(respData.sts === "failure"){
+                if (respData.sts === "failure") {
                     setError('Failed to Load')
                 }
-                else{
+                else {
                     setDetails(respData.data);
-                    if(respData.data.placedAt !== null){
+                    if (respData.data.placedAt !== null) {
                         return fetchCompanyName(respData.data.placedAt);
                     }
                     return true;
                 }
-                
-             })
-             .then((res) => {
-                if(res !== true){
+
+            })
+            .then((res) => {
+                if (res !== true) {
                     const respData = res.data;
-                    if(respData.sts === "failure"){
+                    if (respData.sts === "failure") {
                         setError('Failed to Load')
                     }
-                    else{
+                    else {
                         setPlacedCompanyName(respData.data.name);
                     }
                 }
                 setLoading(false);
-             })
-             .catch((err) => {
+            })
+            .catch((err) => {
                 console.log(err);
                 setLoading(false);
                 setError('Failed to Load')
-             })
+            })
     }, []);
 
 
 
     const changePlacementStatus = function (placedAt) {
-        const reqUrl = url + '/updatePlacedAt/' + sid;
+        const reqUrl = url + '/student/updatePlacedAt/' + sid;
         return axios.patch(reqUrl, {
             placedAt: placedAt
         });
     }
 
-    const getCompanyName =function (placedAt){
-        for(var i = 0; i < appliedRec.length; i++){
-            if(appliedRec[i].id === Number.parseInt(placedAt)){
+    const getCompanyName = function (placedAt) {
+        for (var i = 0; i < appliedRec.length; i++) {
+            if (appliedRec[i].id === Number.parseInt(placedAt)) {
                 return appliedRec[i].name;
             }
         }
@@ -147,25 +147,25 @@ export default function ViewStudent(){
     }
 
 
-    const handleModalFormSubmit = function (){
+    const handleModalFormSubmit = function () {
         const placedAt = placedCompanyRef.current.value;
         setModalLoading(true);
         changePlacementStatus(placedAt)
-        .then((res) => {
-            const respData = res.data;
-            if(respData.sts === "failure"){
-                setModalError('Failed to Update')
-            }
-            else{
-                setPlacedCompanyName(getCompanyName(placedAt))
-                handleClose()
-            }
-            setModalLoading(false);
-        })
-        .catch((err) => {
-            setModalError('Failed to update');
-            setModalLoading(false);
-        })
+            .then((res) => {
+                const respData = res.data;
+                if (respData.sts === "failure") {
+                    setModalError('Failed to Update')
+                }
+                else {
+                    setPlacedCompanyName(getCompanyName(placedAt))
+                    handleClose()
+                }
+                setModalLoading(false);
+            })
+            .catch((err) => {
+                setModalError('Failed to update');
+                setModalLoading(false);
+            })
     }
 
 
@@ -173,111 +173,111 @@ export default function ViewStudent(){
 
     return (
 
-        
-        
+
+
         <div className="safeArea text-center">
 
-            { loading && <Lottie animationData={loader} loop={true} className="loaderAnimation"></Lottie>}
+            {loading && <Lottie animationData={loader} loop={true} className="loaderAnimation"></Lottie>}
             {
                 !loading
                 &&
                 <>
-                <h1>{details.name}</h1>
-                <br/>
-                <h4>Roll No</h4>
-                <p>{details.rollNo}</p>
-                <br/>
-                <h4>Email</h4>
-                <p>{details.email}</p>
-                <br/>
-                <h4>Address</h4>
-                <p>{details.address}</p>
-                <br/>
-                <h4>Stream</h4>
-                <p>{details.stream}</p>
-                <br/>
-                <h4>Branch</h4>
-                <p>{details.branch}</p>
-                <br/>
-                <h4>CGPA</h4>
-                <p>{details.cgpa}</p>
-                <br/>
-                <h4>Contact</h4>
-                <p>{details.contact}</p>
-                <br/>
-                <h4>Date of Birth</h4>
-                <p>{getDateString(details.dob, 1)}</p>
-                <br />
-                <button type="button" className="btn btn-secondary btn-lg">Download Resume</button>
-                <br />
-                <br />
-                {
-                    placedCompanyName !== null
-                    &&
-                    <center>
-                        <TextAnim primaryText="Placed" secondaryText={`at ${placedCompanyName}`}/>
-                    </center>
-                    
-                }
-                {
-                    placedCompanyName === null
-                    &&
-                    <button type="button" className="btn btn-primary" onClick={((e) => {
-                        handleShow();
-                    })}>Change Placement Status</button>
-                }
-                
+                    <h1>{details.name}</h1>
+                    <br />
+                    <h4>Roll No</h4>
+                    <p>{details.rollNo}</p>
+                    <br />
+                    <h4>Email</h4>
+                    <p>{details.email}</p>
+                    <br />
+                    <h4>Address</h4>
+                    <p>{details.address}</p>
+                    <br />
+                    <h4>Stream</h4>
+                    <p>{details.stream}</p>
+                    <br />
+                    <h4>Branch</h4>
+                    <p>{details.branch}</p>
+                    <br />
+                    <h4>CGPA</h4>
+                    <p>{details.cgpa}</p>
+                    <br />
+                    <h4>Contact</h4>
+                    <p>{details.contact}</p>
+                    <br />
+                    <h4>Date of Birth</h4>
+                    <p>{getDateString(details.dob, 1)}</p>
+                    <br />
+                    <button type="button" className="btn btn-secondary btn-lg">Download Resume</button>
+                    <br />
+                    <br />
+                    {
+                        placedCompanyName !== null
+                        &&
+                        <center>
+                            <TextAnim primaryText="Placed" secondaryText={`at ${placedCompanyName}`} />
+                        </center>
 
-                <Modal show={show} onHide={handleClose} dialogClassName="modal-width">
+                    }
+                    {
+                        placedCompanyName === null
+                        &&
+                        <button type="button" className="btn btn-primary" onClick={((e) => {
+                            handleShow();
+                        })}>Change Placement Status</button>
+                    }
+
+
+                    <Modal show={show} onHide={handleClose} dialogClassName="modal-width">
                         <Modal.Header closeButton>
-                        <Modal.Title>Change Placement Status</Modal.Title>
+                            <Modal.Title>Change Placement Status</Modal.Title>
                         </Modal.Header>
                         <Modal.Body>
-                        {modalLoading && <Lottie animationData={loader} loop={true} className="loaderAnimation"></Lottie>}
-                        {
-                            !modalLoading 
-                            &&
-                            <form>
-                                <div className="mb-3">
-                                    <label className="form-label" htmlFor="companyDropDownSelect">Choose the Company</label>
-                                    <select className="form-select" id="companyDropDownSelect" placeholder="Choose the Company" ref={placedCompanyRef}>
-                                        {
-                                            appliedRec.map((element, index) => {
-                                                return (
-                                                    <option key={index} value={appliedRec[index].id}>{appliedRec[index].name + ' - ' + appliedRec[index].jobRole} </option>
-                                                );
-                                            })
-                                        }
-                                        
-                                    </select>
-                                </div>                
-                            </form>    
-                        }
+                            {modalLoading && <Lottie animationData={loader} loop={true} className="loaderAnimation"></Lottie>}
+                            {
+                                !modalLoading
+                                &&
+                                <form>
+                                    <div className="mb-3">
+                                        <label className="form-label" htmlFor="companyDropDownSelect">Choose the Company</label>
+                                        <select className="form-select" id="companyDropDownSelect" placeholder="Choose the Company" ref={placedCompanyRef}>
+                                            {
+                                                appliedRec.map((element, index) => {
+                                                    return (
+                                                        <option key={index} value={appliedRec[index].id}>{appliedRec[index].name + ' - ' + appliedRec[index].jobRole} </option>
+                                                    );
+                                                })
+                                            }
 
-                        {
-                            !modalLoading && modalError !== undefined 
-                            &&
-                            <center>
-                                <Alert variant="danger">{modalError}</Alert>
-                            </center>
-                        }
-                        
-                    </Modal.Body>
+                                        </select>
+                                    </div>
+                                </form>
+                            }
+
+                            {
+                                !modalLoading && modalError !== undefined
+                                &&
+                                <center>
+                                    <Alert variant="danger">{modalError}</Alert>
+                                </center>
+                            }
+
+                        </Modal.Body>
                         <Modal.Footer>
-                        <Button variant='primary' onClick={handleModalFormSubmit}>Done</Button>
-                        <Button variant="secondary" onClick={handleClose}>
-                            Close
-                        </Button>
+                            <Button variant='primary' onClick={handleModalFormSubmit}>Done</Button>
+                            <Button variant="secondary" onClick={handleClose}>
+                                Close
+                            </Button>
                         </Modal.Footer>
-                </Modal>
+                    </Modal>
 
                 </>
-                
+
             }
-        
+
         </div>
 
-    
+
 
     );
 }
