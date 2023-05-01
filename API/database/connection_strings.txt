@@ -1,4 +1,0 @@
-hostname=nitc-pms.mysql.database.azure.com
-username=akhilsarwarth
-password=Qwertyuiop[]*0123#
-ssl-mode=require
