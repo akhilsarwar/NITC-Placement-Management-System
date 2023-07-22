@@ -76,13 +76,4 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/t
 <br/>
 
 
-## Getting Started with the docker container
-
-# For linux
-
-- In the home app directory run
-```
-docker compose rm -vf; docker compose up --build
-```
-
 
