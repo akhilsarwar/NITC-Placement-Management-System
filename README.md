@@ -36,15 +36,15 @@ Nitc placement management system is a web application for managing placement rel
 
 |                           |                             |
 | ----------------------------------- | ----------------------------------- |
-| ![Alt text](./readme-assets/readme-1.png "a title") | ![Alt text](./readme-assets/readme-2.png "a title") |
+| ![Alt text](./readme-assets/readme-1-min.png "a title") | ![Alt text](./readme-assets/readme-2-min.png "a title") |
 
 |                           |                             |
 | ----------------------------------- | ----------------------------------- |
-| ![Alt text](./readme-assets/readme-3.png "a title") | ![Alt text](./readme-assets/readme-4.png "a title") |
+| ![Alt text](./readme-assets/readme-3-min.png "a title") | ![Alt text](./readme-assets/readme-4-min.png "a title") |
 
 |                           |                             |
 | ----------------------------------- | ----------------------------------- |
-| ![Alt text](./readme-assets/readme-5.png "a title") | ![Alt text](./readme-assets/readme-6.png "a title") |
+| ![Alt text](./readme-assets/readme-5-min.png "a title") | ![Alt text](./readme-assets/readme-6-min.png "a title") |
 
 
 
