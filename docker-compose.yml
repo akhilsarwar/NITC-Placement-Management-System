@@ -1,31 +1,52 @@
+# specifying the verison 
 version: '3.9'
 
-x-common-variables:
-  &common-variables
+# Extension field x-common-variables is used to modularize configurations that we want to reuse. his is the sole exception where Compose silently ignores unrecognized fields.
+# &common-variables is known as Fragment and is used to reference x-common-variable from a particular service. Later used with * sign to reference its value
+x-common-variables: &common-variables
   MYSQL_DATABASE: nitc_pms
   MYSQL_USER: akhilsarwarth
   MYSQL_PASSWORD: Qwertyuiop[]*123#
 
 services:
+
+  #mysql database service
   mysql_db:
     image: mysql
+
+    # to always restart the container if it stops
     restart: always
+
+    # runs this command inside the container. After running this command container will stop. But since we added restart always it will start again.
     command:
       [
         "mysqld",
         "--default-authentication-plugin=mysql_native_password"
       ]
+
+    # Grants the container the CAP_SYS_NICE capability, which allows the container to raise process nice values, set real-time scheduling policies, set CPU affinity, and other operations.
     cap_add:
       - SYS_NICE
+
+    # volume mapped from the database folder to /docker-entrypoint-initdb.d folder inside the container
     volumes:
       - "./database:/docker-entrypoint-initdb.d"
+
+    # HostPort:ContainerPort, the service will be exposed to host machine via 9906 and within another service/container via 3306. Another container can access via the default container network through 3306
     ports:
       - "9906:3306"
+
+    # Setting of environment variables inside the container
     environment:
+
+      # << is used for Merging. value from common-variables are merged with environment. Same keys are overriden by the child i.e., just like inheritence
       <<: *common-variables
       MYSQL_ROOT_PASSWORD: Qwertyuiop[]*123#
       MYSQL_HOST: localhost
+
+    # to monitor whether the service is running properly
     healthcheck:
+      # test command
       test:
         [
           "CMD",
@@ -36,11 +57,15 @@ services:
           "-uakhilsarwarth",
           "-pQwertyuiop[]*123#"
         ]
+      # repeats after this time
       interval: 5s
+      # ping times out after 5 sec
       timeout: 5s
       retries: 20
 
+  # web server 
   nginx:
+    # nginx web server rebuild depends on api and client services. If any of them changes nginx rebuilds
     depends_on:
       - api
       - client
@@ -76,6 +101,7 @@ services:
       - /app/node_modules
       - ./client:/app
 
+  # Adminer (formerly phpMinAdmin) is a full-featured database management tool written in PHP.
   adminer:
     image: adminer:latest
     restart: unless-stopped

@@ -8,8 +8,14 @@
 - In the home app directory run
 ```
  docker compose rm -vf;
+```
+
+- This will remove stopped service containers and anonymous volumes attached to containers.
+
+```
  docker compose up --build
 ```
+
 
 - This will build all necessary images and start the docker containers
 
